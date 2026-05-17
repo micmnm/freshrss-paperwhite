@@ -1,5 +1,7 @@
+@import url("../Origine/origine.css");
+
 /* Paperwhite — readability-first, macOS-inspired FreshRSS theme.
- * Parent: Origine. Overrides only what we need; everything else inherits.
+ * Builds on Origine for base layout; overrides typography, colors, density.
  * Light + dark in one file; follows system, body.dark forces dark.
  */
 
