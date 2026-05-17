@@ -1,0 +1,7 @@
+{
+	"name": "Paperwhite v2",
+	"author": "mircea",
+	"description": "Paperwhite v2 — iterating from v1 baseline",
+	"version": "2.0.2",
+	"files": ["_frss.css", "paperwhite-v2.css"]
+}

@@ -1,0 +1,997 @@
+@import url("../Origine/origine.css");
+
+/* Paperwhite — readability-first, macOS-inspired FreshRSS theme.
+ * Builds on Origine for base layout; overrides typography, colors, density.
+ * Light + dark in one file; follows system, body.dark forces dark.
+ */
+
+/* ============================================================
+   Design tokens
+   ============================================================ */
+:root {
+	--font-ui:    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+	--font-body:  "New York", ui-serif, Charter, "Iowan Old Style", "Source Serif Pro", Georgia, "Times New Roman", serif;
+	--font-mono:  "SF Mono", ui-monospace, Menlo, "JetBrains Mono", Consolas, monospace;
+
+	/* light — warm paper */
+	--bg:           #fbf8f3;
+	--surface:      #ffffff;
+	--header-bg:    #f5f0e6;
+	--border:       #ece6dc;
+	--border-soft:  #f3ede2;
+	--text:         #1c1917;
+	--muted:        #78716c;
+	--read:         #a8a29e;
+	--accent:       #1c1c1e;
+	--accent-hover: #44403c;
+	--selected:     rgba(28, 28, 30, .07);
+	--hover:        rgba(28, 28, 30, .04);
+	--unread:       #c2410c;
+	--favorite:     #c2410c;
+	--error:        #b91c1c;
+	--row-alt:      #faf6ef;
+
+	--side-bg:      #f0f0f0;
+	--side-bg-2:    #e4e4e7;
+	--side-text:    #1c1c1e;
+	--side-muted:   #6e6e73;
+	--side-border:  #d4d4d8;
+	--side-active:  #d4d4d8;
+	--side-hover:   rgba(0, 0, 0, .04);
+
+	--radius:       8px;
+	--radius-sm:    6px;
+	--shadow-card:  0 1px 2px rgba(28, 25, 23, .04), 0 6px 24px rgba(28, 25, 23, .06);
+
+	/* spacing — comfortable (stacks on top of frss.css's own padding) */
+	--row-py:       10px;
+	--row-px:       20px;
+	--reader-py:    36px;
+	--reader-px:    48px;
+	--reader-max:   680px;
+	--lh-body:      1.7;
+}
+
+/* Dark tokens — applied by any of:
+ *   html.darkMode_dark / html.darkMode_yes (user forced)
+ *   html.darkMode_auto + OS prefers-color-scheme: dark
+ *
+ * We override BOTH Paperwhite vars AND Origine's --background-color-*
+ * / --font-color-* / --border-color vars so all of Origine's rules
+ * naturally pick up the dark palette.
+ */
+html.darkMode_dark,
+html.darkMode_yes {
+	/* Paperwhite */
+	--bg:           #1c1917;
+	--surface:      #292524;
+	--header-bg:    #1c1917;
+	--border:       #44403c;
+	--border-soft:  #2c2724;
+	--text:         #f5f5f4;
+	--muted:        #a8a29e;
+	--read:         #78716c;
+	--accent:       #e5e5e7;
+	--accent-hover: #fafaf9;
+	--selected:     rgba(245, 245, 244, .08);
+	--hover:        rgba(245, 245, 244, .04);
+	--unread:       #fb923c;
+	--favorite:     #fb923c;
+	--error:        #f87171;
+	--row-alt:      #211d1b;
+	--side-bg:      #27272a;
+	--side-bg-2:    #3f3f46;
+	--side-text:    #fafafa;
+	--side-muted:   #a1a1aa;
+	--side-border:  #18181b;
+	--side-active:  #3f3f46;
+	--side-hover:   rgba(255, 255, 255, .04);
+	--shadow-card:  0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .4);
+
+	/* Origine / frss vars — remap to our warm dark */
+	--background-color-light:                       #1c1917;
+	--background-color-light-shadowed:              #292524;
+	--background-color-light-shadowed-transparent:  rgba(41,37,36,.8);
+	--background-color-grey:                        #292524;
+	--background-color-hover:                       #211d1b;
+	--background-color-light-gradient1:             #1c1917;
+	--background-color-light-gradient2:             #1c1917;
+	--unread-article-background-color:              #1c1917;
+	--unread-article-background-color-hover:        #211d1b;
+	--unread-article-border-color:                  transparent;
+	--favorite-article-background-color:            #1f1c17;
+	--favorite-article-background-color-hover:      #29251f;
+	--favorite-article-border-color:                transparent;
+	--contrast-background-color:                    #44403c;
+	--contrast-background-color-gradient:           #44403c;
+	--contrast-background-color-hover:              #57534e;
+	--contrast-background-color-active:             #3f3f46;
+	--contrast-border-color:                        #44403c;
+	--contrast-border-color-active:                 #57534e;
+	--contrast-background-font-color:               #f5f5f4;
+	--font-color:                                   #f5f5f4;
+	--font-color-grey:                              #a8a29e;
+	--font-color-light-shadowed:                    #78716c;
+	--font-color-light:                             #f5f5f4;
+	--text-shadow-color:                            #292524;
+	--text-shadow-color-dark:                       #1c1917;
+	--box-shadow-color:                             rgba(0,0,0,.4);
+	--box-shadow-color-inset:                       #292524;
+	--font-color-link:                              #e5e5e7;
+	--font-color-link-hover:                        #fafaf9;
+	--border-color:                                 #44403c;
+	--border-color-shadow-side:                     #2c2724;
+}
+@media (prefers-color-scheme: dark) {
+	html.darkMode_auto {
+		--bg:           #1c1917;
+		--surface:      #292524;
+		--header-bg:    #1c1917;
+		--border:       #44403c;
+		--border-soft:  #2c2724;
+		--text:         #f5f5f4;
+		--muted:        #a8a29e;
+		--read:         #78716c;
+		--accent:       #e5e5e7;
+		--accent-hover: #fafaf9;
+		--selected:     rgba(245, 245, 244, .08);
+		--hover:        rgba(245, 245, 244, .04);
+		--unread:       #fb923c;
+		--favorite:     #fb923c;
+		--error:        #f87171;
+		--row-alt:      #211d1b;
+		--side-bg:      #27272a;
+		--side-bg-2:    #3f3f46;
+		--side-text:    #fafafa;
+		--side-muted:   #a1a1aa;
+		--side-border:  #18181b;
+		--side-active:  #3f3f46;
+		--side-hover:   rgba(255, 255, 255, .04);
+		--shadow-card:  0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .4);
+
+		--background-color-light:                       #1c1917;
+		--background-color-light-shadowed:              #292524;
+		--background-color-light-shadowed-transparent:  rgba(41,37,36,.8);
+		--background-color-grey:                        #292524;
+		--background-color-hover:                       #211d1b;
+		--background-color-light-gradient1:             #1c1917;
+		--background-color-light-gradient2:             #1c1917;
+		--unread-article-background-color:              #1c1917;
+		--unread-article-background-color-hover:        #211d1b;
+		--unread-article-border-color:                  transparent;
+		--favorite-article-background-color:            #1f1c17;
+		--favorite-article-background-color-hover:      #29251f;
+		--favorite-article-border-color:                transparent;
+		--contrast-background-color:                    #44403c;
+		--contrast-background-color-hover:              #57534e;
+		--contrast-background-color-active:             #3f3f46;
+		--contrast-border-color:                        #44403c;
+		--contrast-background-font-color:               #f5f5f4;
+		--font-color:                                   #f5f5f4;
+		--font-color-grey:                              #a8a29e;
+		--font-color-light-shadowed:                    #78716c;
+		--font-color-light:                             #f5f5f4;
+		--font-color-link:                              #e5e5e7;
+		--font-color-link-hover:                        #fafaf9;
+		--border-color:                                 #44403c;
+		--border-color-shadow-side:                     #2c2724;
+		--box-shadow-color:                             rgba(0,0,0,.4);
+		--box-shadow-color-inset:                       #292524;
+	}
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html, body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-ui);
+	font-size: 14px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+::selection { background: var(--selected); color: var(--text); }
+
+hr { border: 0; border-top: 1px solid var(--border); }
+
+/* ============================================================
+   Top header (#header)
+   ============================================================ */
+#header {
+	background: var(--header-bg);
+	border-bottom: 1px solid var(--border);
+	color: var(--text);
+	padding: 10px 20px;
+}
+
+#header .logo {
+	font-weight: 600;
+	font-size: 18px;
+	letter-spacing: -0.01em;
+	color: var(--text);
+}
+
+#header .logo a { color: var(--text); }
+
+#header #search {
+	max-width: 560px;
+}
+#header #search input[type="search"],
+#header input[type="search"] {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 8px 12px;
+	font-family: inherit;
+	font-size: 13px;
+}
+#header #search input[type="search"]:focus,
+#header input[type="search"]:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--selected);
+}
+#header #search button,
+#header .search button {
+	background: transparent;
+	border: 1px solid var(--border);
+	border-left: 0;
+	color: var(--muted);
+	border-radius: 0 var(--radius) var(--radius) 0;
+}
+#header #search button:hover { color: var(--text); background: var(--hover); }
+
+#header .configure,
+#header a.configure {
+	background: transparent;
+	color: var(--text);
+	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+}
+#header .configure:hover { background: var(--hover); }
+
+/* ============================================================
+   Action toolbar (#nav_menu_views, .nav_menu, .btn)
+   Replaces the saturated blue blocks with quiet graphite buttons.
+   ============================================================ */
+.nav_menu,
+#nav_menu_views,
+#nav_menu_actions,
+#nav_menu_read_all {
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+}
+
+.btn,
+button.btn,
+a.btn,
+.nav_menu .btn,
+.nav_menu a {
+	background: transparent;
+	background-image: none;          /* kill frss.css linear-gradient */
+	color: var(--text);
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	text-shadow: none;
+	box-shadow: none;
+	transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+.btn:hover,
+.nav_menu .btn:hover,
+.nav_menu a:hover { background: var(--hover); color: var(--text); }
+.btn.active,
+.btn[aria-pressed="true"],
+.nav_menu .active { background: var(--selected); color: var(--accent); border-color: var(--border); }
+
+/* primary actions (Mark as read confirm, etc.) */
+.btn.btn-important,
+.btn-important,
+button.btn-important {
+	background: var(--accent);
+	color: var(--bg);
+	border-color: var(--accent);
+}
+.btn.btn-important:hover,
+.btn-important:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--bg); }
+
+/* destructive */
+.btn.btn-attention { background: var(--error); color: #fff; border-color: var(--error); }
+.btn.btn-attention:hover { filter: brightness(.92); }
+
+/* dropdowns */
+.dropdown-menu,
+.dropdown {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	color: var(--text);
+}
+.dropdown a, .dropdown-menu a { color: var(--text); }
+.dropdown a:hover, .dropdown-menu a:hover { background: var(--hover); }
+
+/* read/unread/all view toggles — icons render via core SVG, we recolor */
+.nav_menu .btn svg,
+.nav_menu .icon { fill: currentColor; }
+
+/* ============================================================
+   Sidebar (#sidebar, .tree, .feed, .category)
+   Mid-tone graphite, neutral hue in both modes.
+   ============================================================ */
+/* Sidebar column — apply graphite to the whole .aside.aside_feed container
+ * (not just the inner #sidebar ul) so background fills full vertical height,
+ * the area above "Subscription management" and the area around the bottom
+ * nav arrows. */
+.aside.aside_feed,
+nav.aside_feed,
+#aside_feed,
+#sidebar,
+aside#sidebar {
+	background: var(--side-bg);
+	color: var(--side-text);
+	border-right: 1px solid var(--side-border);
+}
+
+/* bottom prev/next nav arrows — they're position:fixed at bottom-left,
+ * sitting visually under the sidebar; carry the same graphite */
+#nav_entries {
+	background: var(--side-bg);
+	border-right: 1px solid var(--side-border);
+	border-top: 1px solid var(--side-border);
+}
+#nav_entries button { color: var(--side-muted); }
+#nav_entries button:hover { background: rgba(255,255,255,.06); color: var(--side-text); }
+
+/* sidebar text color (higher contrast for readability) */
+.aside.aside_feed,
+.aside.aside_feed a,
+.aside.aside_feed .title,
+.aside.aside_feed .tree-folder-title .title,
+.aside.aside_feed .feed .title,
+#sidebar a,
+#sidebar .title {
+	color: var(--side-text);
+}
+
+/* Subscription management button — clearly visible on dark sidebar */
+#sidebar .btn.btn-important,
+#sidebar .btn-important,
+#sidebar a.btn-important,
+#stream .btn-important,
+.btn[href*="subscription"] {
+	background: var(--side-bg-2);
+	background-image: none;
+	color: var(--side-text);
+	border: 1px solid rgba(255,255,255,.1);
+	border-radius: var(--radius-sm);
+	font-weight: 500;
+	text-shadow: none;
+	box-shadow: none;
+}
+#sidebar .btn.btn-important:hover,
+#sidebar .btn-important:hover,
+#sidebar a.btn-important:hover {
+	background: rgba(255,255,255,.12);
+	background-image: none;
+	border-color: rgba(255,255,255,.18);
+	color: var(--side-text);
+}
+
+/* tree */
+#sidebar .tree,
+#sidebar .tree-folder,
+#sidebar .tree-folder-items,
+#sidebar ul {
+	background: transparent;
+	color: var(--side-text);
+}
+
+#sidebar a,
+#sidebar .item,
+#sidebar .tree-folder-title,
+#sidebar .feed {
+	color: var(--side-text);
+	background: transparent;
+	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+	font-weight: 500;
+}
+#sidebar .tree-folder-title .title,
+#sidebar .item .title,
+.aside.aside_feed .title { font-weight: 500; }
+#sidebar a:hover,
+#sidebar .tree-folder-title:hover,
+#sidebar .feed:hover { background: var(--side-hover); color: var(--side-text); }
+
+/* Active sidebar item — uses --side-text so it adapts to light/dark sidebar */
+.aside.aside_feed .tree-folder.active > .tree-folder-title,
+.aside.aside_feed .tree-folder-items > .item.active,
+.aside.aside_feed .feed.active > a,
+#sidebar .nav-list .item.active,
+#sidebar .nav-list .nav-section .item.active:hover a,
+#sidebar .nav-list .nav-section .item.active:hover .as-link,
+#sidebar .tree-folder.active > .tree-folder-title,
+#sidebar .tree-folder-items > .item.active,
+#sidebar .feed.active > a,
+#sidebar a.active {
+	background: var(--side-active);
+	color: var(--side-text);
+	font-weight: 700;
+	box-shadow: inset 3px 0 0 var(--accent);
+}
+#sidebar .nav-list .item.active a,
+#sidebar .nav-list .item.active .as-link,
+#sidebar .tree-folder-items > .item.active > a,
+.aside.aside_feed .tree-folder.active > .tree-folder-title .title,
+#sidebar .tree-folder.active > .tree-folder-title .title {
+	color: var(--side-text);
+	font-weight: 700;
+}
+
+/* count badges */
+#sidebar .feed_count,
+#sidebar .title-count,
+#sidebar .count,
+.feed_count {
+	background: rgba(0, 0, 0, .08);
+	color: var(--side-text);
+	font-size: 11px;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	padding: 1px 7px;
+	border-radius: 9px;
+}
+#sidebar .active .feed_count,
+#sidebar .active .title-count { background: rgba(0, 0, 0, .12); }
+
+/* feed errors (warning triangle) */
+#sidebar .error,
+#sidebar .feed.error > a,
+.tree-folder-title.error,
+.error .icon,
+.warning { color: var(--error); }
+
+/* disclosure / fold arrows */
+#sidebar .tree-folder > .tree-folder-title::before,
+#sidebar .disclosure { color: var(--side-muted); }
+
+/* favicons in sidebar */
+#sidebar .favicon {
+	width: 14px; height: 14px;
+	border-radius: 2px;
+	background: var(--side-bg-2);
+}
+
+/* Sidebar icons — dark on light grey background, monochrome */
+#sidebar .icon,
+#sidebar a .icon,
+#sidebar button .icon,
+#sidebar img.icon {
+	filter: brightness(0);
+	opacity: .7;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+#sidebar .active .icon,
+#sidebar .tree-folder.active > .tree-folder-title .icon { opacity: 1; }
+
+/* bottom navigation arrows */
+#sidebar .nav_menu_bottom,
+#nav_menu_buttons,
+.nav_menu_bottom {
+	border-top: 1px solid var(--side-border);
+	padding: 8px 12px;
+	background: transparent;
+}
+.nav_menu_bottom .btn,
+#nav_menu_buttons .btn {
+	background: transparent;
+	color: var(--side-muted);
+	border: none;
+}
+.nav_menu_bottom .btn:hover,
+#nav_menu_buttons .btn:hover {
+	background: var(--side-hover);
+	color: var(--side-text);
+}
+
+/* aside hidden state — preserve core behavior */
+body.aside-hidden #sidebar { display: none; }
+
+/* ============================================================
+   Article list (#stream, .flux) — list view (primary)
+   ============================================================ */
+#stream {
+	background: var(--bg);
+	color: var(--text);
+}
+
+/* day separators (class is .transition in FreshRSS) */
+#stream .transition,
+.transition {
+	padding: 18px 20px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	color: var(--muted);
+	text-transform: uppercase;
+	background: var(--bg);
+	border-top: 1px solid var(--border);
+	border-bottom: 1px solid var(--border-soft);
+	line-height: 1.6;
+}
+#stream .transition .transition-value a,
+.transition .transition-value a {
+	color: var(--muted);
+	font-weight: 600;
+}
+#stream .transition .transition-value a:hover { color: var(--text); }
+/* hide the stray ⏭ "next day" icon — feels like noise next to the date */
+#stream .transition .transition-next,
+.transition-next { display: none; }
+/* ghost watermark of current feed on right */
+.transition .name {
+	font-family: var(--font-body);
+	font-style: italic;
+	color: var(--muted);
+	opacity: .35;
+	text-transform: none;
+	letter-spacing: -0.01em;
+	font-size: 18px;
+}
+
+/* feed-name watermark (right-edge ghost) */
+.stream_title,
+#stream > .stream_title,
+.title-stream-feed {
+	font-family: var(--font-body);
+	font-style: italic;
+	color: var(--muted);
+	opacity: .35;
+	font-size: 18px;
+	letter-spacing: -0.01em;
+}
+
+/* article rows — list view, tight & uniform */
+#stream .flux,
+.flux {
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+	border-left: 0 !important;
+	padding: 0;
+	color: var(--text);
+	transition: background-color .1s ease;
+}
+#stream .flux.not_read,
+#stream .flux.favorite,
+#stream .flux.current { border-left: 0 !important; }
+
+/* override frss.css's `.flux_header .item .item-element { padding: 0.5rem 0; line-height: 1.5rem }` */
+#stream .flux .flux_header,
+#stream .flux .flux_header .item,
+#stream .flux .flux_header .item .item-element {
+	line-height: 1.4;
+}
+#stream .flux .flux_header .item .item-element {
+	padding-top: var(--row-py);
+	padding-bottom: var(--row-py);
+}
+/* kill any forced row min-height from thumbnail/summary mode in list view */
+#stream:not(.reader):not(.global) .flux .flux_header .item.thumbnail { height: auto; }
+/* zebra striping — use of-type since the day separator sits among the .flux siblings */
+#stream .flux:nth-of-type(even) { background: var(--row-alt); }
+#stream .flux:hover { background: var(--hover); }
+
+/* unread vs read — punchy hierarchy */
+#stream .flux.not_read .item .title,
+#stream .flux.not_read .title {
+	color: var(--text);
+	font-weight: 600;
+}
+#stream .flux:not(.not_read) .item .title,
+#stream .flux:not(.not_read) .title {
+	color: var(--read);
+	font-weight: 400;
+}
+
+/* active (selected) row */
+#stream .flux.active,
+.flux.active {
+	background: var(--selected);
+}
+#stream .flux.current,
+.flux.current {
+	background: var(--selected);
+	box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* unread envelope icon — semantic warm-orange */
+.flux .read,
+.flux .marker,
+.flux.not_read .read {
+	color: var(--unread);
+}
+.flux:not(.not_read) .read { color: var(--read); opacity: .45; }
+
+/* favorite/star icon */
+.flux .bookmark,
+.flux .favorite-action {
+	color: var(--muted);
+	opacity: .55;
+}
+.flux.favorite .bookmark,
+.flux.favorite .favorite-action {
+	color: var(--favorite);
+	opacity: 1;
+}
+
+/* favicon in rows */
+.flux .favicon,
+.flux img.favicon {
+	width: 16px; height: 16px;
+	border-radius: 2px;
+}
+
+/* source / website name (FreshRSS uses .websiteName span inside .item.website) */
+#stream .flux .websiteName,
+#stream .flux .website .item-element,
+.flux .website a,
+.flux .feed_title {
+	color: var(--accent);
+	font-weight: 500;
+	font-size: 13px;
+}
+
+/* date */
+.flux .date {
+	color: var(--muted);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+/* title — main text */
+.flux .title,
+.flux .item.title a {
+	color: var(--text);
+	letter-spacing: -0.005em;
+}
+
+/* author/byline */
+.flux .author { color: var(--muted); font-size: 12px; }
+
+/* tags / labels on rows */
+.flux .tags .label,
+.flux .label {
+	background: var(--selected);
+	color: var(--muted);
+	border-radius: 4px;
+	padding: 1px 6px;
+	font-size: 11px;
+}
+
+/* ============================================================
+   Magazine + global-view (.global, .reader) — expanded card
+   ============================================================ */
+#stream.reader .flux,
+#stream.global .flux,
+.global .flux {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	margin: 12px 20px;
+	padding: 20px 24px;
+}
+#stream.reader .flux:hover,
+#stream.global .flux:hover { background: var(--surface); }
+
+#stream.reader .flux .title,
+#stream.global .flux .title {
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+}
+
+/* Expanded flux body — only style when actually shown, not collapsed */
+.flux.active .flux_content,
+#stream.reader .flux .flux_content {
+	background: var(--surface);
+	color: var(--text);
+	border-radius: var(--radius);
+	margin-top: 12px;
+	padding: var(--reader-py) var(--reader-px);
+}
+
+/* ============================================================
+   Grid view (.flux.grid, .reader.grid)
+   ============================================================ */
+.reader.grid #stream,
+#stream.grid {
+	padding: 16px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 16px;
+}
+#stream.grid .flux,
+.reader.grid .flux {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	margin: 0;
+	padding: 16px 18px;
+	display: flex;
+	flex-direction: column;
+}
+#stream.grid .flux .title,
+.reader.grid .flux .title {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: -0.005em;
+	line-height: 1.35;
+	margin-bottom: 8px;
+}
+#stream.grid .flux .summary,
+.reader.grid .flux .summary {
+	color: var(--muted);
+	font-size: 13px;
+	line-height: 1.55;
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* ============================================================
+   Article reading pane (.flux_content / .content) — only when active
+   ============================================================ */
+.flux.active .flux_content {
+	background: var(--surface);
+	color: var(--text);
+}
+
+/* article reading pane's inner header (only inside expanded .flux_content) */
+.flux_content .flux_header {
+	border-bottom: 1px solid var(--border);
+	padding-bottom: 16px;
+	margin-bottom: 22px;
+}
+
+.flux_content .title,
+.flux_content h1,
+.flux_content .item.title {
+	font-family: var(--font-ui);
+	font-size: 26px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	color: var(--text);
+	margin: 0 0 8px;
+}
+
+.flux_content .author,
+.flux_content .date,
+.flux_content .subtitle {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.flux_content .content,
+.content {
+	font-family: var(--font-body);
+	font-size: 16.5px;
+	line-height: var(--lh-body);
+	color: var(--text);
+	max-width: var(--reader-max);
+}
+
+.content p { margin: 0 0 18px; }
+
+.content h2, .content h3, .content h4 {
+	font-family: var(--font-ui);
+	letter-spacing: -0.01em;
+	color: var(--text);
+	margin-top: 28px;
+	margin-bottom: 10px;
+}
+.content h2 { font-size: 22px; font-weight: 600; }
+.content h3 { font-size: 18px; font-weight: 600; }
+.content h4 { font-size: 16px; font-weight: 600; }
+
+.content a {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	text-decoration-color: var(--border);
+}
+.content a:hover {
+	text-decoration-color: var(--accent);
+	color: var(--accent-hover);
+}
+
+.content blockquote {
+	margin: 18px 0;
+	padding: 4px 0 4px 20px;
+	border-left: 2px solid var(--border);
+	color: var(--muted);
+	font-style: italic;
+}
+
+.content code {
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	background: var(--header-bg);
+	padding: 1px 6px;
+	border-radius: 4px;
+	color: var(--text);
+}
+
+.content pre {
+	font-family: var(--font-mono);
+	font-size: 13px;
+	line-height: 1.55;
+	background: var(--header-bg);
+	color: var(--text);
+	padding: 14px 16px;
+	border-radius: var(--radius-sm);
+	overflow: auto;
+	border: 1px solid var(--border);
+}
+.content pre code { background: transparent; padding: 0; }
+
+.content img,
+.content video,
+.content figure {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--radius-sm);
+}
+
+.content figure { margin: 18px 0; }
+.content figcaption {
+	font-size: 13px;
+	color: var(--muted);
+	margin-top: 6px;
+	font-style: italic;
+}
+
+.content table {
+	border-collapse: collapse;
+	margin: 18px 0;
+	font-size: 14px;
+}
+.content th, .content td {
+	border: 1px solid var(--border);
+	padding: 6px 10px;
+	text-align: left;
+}
+.content th { background: var(--header-bg); font-weight: 600; }
+
+.content hr { margin: 24px 0; border-top: 1px solid var(--border); }
+
+/* article footer actions */
+.flux_content .bottom,
+.flux_content .pagination,
+.flux_content .horizontal-list {
+	border-top: 1px solid var(--border);
+	margin-top: 28px;
+	padding-top: 16px;
+	color: var(--muted);
+}
+
+/* ============================================================
+   Forms, modals, settings pages
+   ============================================================ */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	padding: 7px 10px;
+	font-family: inherit;
+	font-size: 13px;
+}
+input:focus, select:focus, textarea:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--selected);
+}
+
+label { color: var(--text); }
+
+.box,
+.notification,
+.alert {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	color: var(--text);
+}
+.notification.good, .alert.good { border-color: #16a34a; }
+.notification.bad, .alert.bad { border-color: var(--error); }
+
+/* tables in settings */
+table.table th,
+table.table td { border-bottom: 1px solid var(--border); }
+table.table th { color: var(--muted); font-weight: 600; }
+
+/* ============================================================
+   Pagination & "load more"
+   ============================================================ */
+.pagination,
+#load_more {
+	padding: 18px 20px;
+	text-align: center;
+	color: var(--muted);
+	border-top: 1px solid var(--border);
+}
+
+#load_more a {
+	display: inline-block;
+	padding: 8px 18px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text);
+}
+#load_more a:hover { background: var(--hover); border-color: var(--accent); }
+
+/* ============================================================
+   Scrollbars (webkit) — subtle, paper-friendly
+   ============================================================ */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 6px;
+	border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+#sidebar::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, .12);
+	border-color: var(--side-bg);
+}
+#sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .2); }
+
+/* ============================================================
+   Responsive (mobile / narrow)
+   ============================================================ */
+@media (max-width: 760px) {
+	:root {
+		--row-py: 13px;
+		--row-px: 14px;
+		--reader-py: 22px;
+		--reader-px: 18px;
+	}
+	.flux_content .title,
+	.flux_content h1 { font-size: 22px; }
+	.content { font-size: 16px; }
+}
+
+
+
+
+
