@@ -527,12 +527,12 @@ body.aside-hidden #sidebar { display: none; }
 	letter-spacing: -0.01em;
 }
 
-/* article rows */
+/* article rows — list view, tight & uniform */
 #stream .flux,
 .flux {
 	background: var(--bg);
 	border-bottom: 1px solid var(--border);
-	border-left: 0 !important;        /* envelope icon already signals unread */
+	border-left: 0 !important;
 	padding: 0;
 	color: var(--text);
 	transition: background-color .1s ease;
@@ -540,12 +540,19 @@ body.aside-hidden #sidebar { display: none; }
 #stream .flux.not_read,
 #stream .flux.favorite,
 #stream .flux.current { border-left: 0 !important; }
-/* tighter row inner padding (overrides frss.css 0.5rem default) */
+
+/* override frss.css's `.flux_header .item .item-element { padding: 0.5rem 0; line-height: 1.5rem }` */
+#stream .flux .flux_header,
+#stream .flux .flux_header .item,
 #stream .flux .flux_header .item .item-element {
-	padding-top: 6px;
-	padding-bottom: 6px;
-	line-height: 1.45;
+	line-height: 1.4;
 }
+#stream .flux .flux_header .item .item-element {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+/* kill any forced row min-height from thumbnail/summary mode in list view */
+#stream:not(.reader):not(.global) .flux .flux_header .item.thumbnail { height: auto; }
 /* zebra striping — use of-type since the day separator sits among the .flux siblings */
 #stream .flux:nth-of-type(even) { background: var(--row-alt); }
 #stream .flux:hover { background: var(--hover); }
@@ -600,8 +607,10 @@ body.aside-hidden #sidebar { display: none; }
 	border-radius: 2px;
 }
 
-/* source / website name */
-.flux .website,
+/* source / website name (FreshRSS uses .websiteName span inside .item.website) */
+#stream .flux .websiteName,
+#stream .flux .website .item-element,
+.flux .website a,
 .flux .feed_title {
 	color: var(--accent);
 	font-weight: 500;
@@ -717,7 +726,7 @@ body.aside-hidden #sidebar { display: none; }
 	color: var(--text);
 }
 
-.flux_header,
+/* article reading pane's inner header (only inside expanded .flux_content) */
 .flux_content .flux_header {
 	border-bottom: 1px solid var(--border);
 	padding-bottom: 16px;
@@ -944,3 +953,8 @@ table.table th { color: var(--muted); font-weight: 600; }
 	.flux_content h1 { font-size: 22px; }
 	.content { font-size: 16px; }
 }
+
+
+
+
+
