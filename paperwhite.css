@@ -205,6 +205,7 @@ a.btn,
 .nav_menu .btn,
 .nav_menu a {
 	background: transparent;
+	background-image: none;          /* kill frss.css linear-gradient */
 	color: var(--text);
 	border: 1px solid transparent;
 	border-radius: var(--radius-sm);
@@ -212,6 +213,8 @@ a.btn,
 	font-family: inherit;
 	font-size: 13px;
 	font-weight: 500;
+	text-shadow: none;
+	box-shadow: none;
 	transition: background-color .12s ease, color .12s ease, border-color .12s ease;
 }
 .btn:hover,
@@ -263,22 +266,29 @@ aside#sidebar {
 	border-right: 1px solid var(--side-border);
 }
 
-/* Subscription management button — restyled from orange to graphite */
-.btn.btn-important.subscription_management,
+/* Subscription management button — clearly visible on dark sidebar */
+#sidebar .btn.btn-important,
 #sidebar .btn-important,
 #sidebar a.btn-important,
+#stream .btn-important,
 .btn[href*="subscription"] {
 	background: var(--side-bg-2);
+	background-image: none;
 	color: var(--side-text);
-	border: 1px solid transparent;
+	border: 1px solid rgba(255,255,255,.1);
 	border-radius: var(--radius-sm);
-	margin: 12px;
-	padding: 10px 14px;
 	font-weight: 500;
+	text-shadow: none;
+	box-shadow: none;
 }
-.btn.btn-important.subscription_management:hover,
+#sidebar .btn.btn-important:hover,
 #sidebar .btn-important:hover,
-#sidebar a.btn-important:hover { background: var(--accent-hover); border-color: var(--side-border); color: var(--side-text); }
+#sidebar a.btn-important:hover {
+	background: rgba(255,255,255,.12);
+	background-image: none;
+	border-color: rgba(255,255,255,.18);
+	color: var(--side-text);
+}
 
 /* tree */
 #sidebar .tree,
@@ -385,16 +395,38 @@ body.aside-hidden #sidebar { display: none; }
 	color: var(--text);
 }
 
-/* day separators */
-.day,
-.day_header,
-#stream .day {
-	padding: 14px 20px 10px;
-	font-size: 14px;
+/* day separators (class is .transition in FreshRSS) */
+#stream .transition,
+.transition {
+	padding: 18px 20px 8px;
+	font-size: 11px;
 	font-weight: 600;
-	color: var(--text);
+	letter-spacing: 0.08em;
+	color: var(--muted);
+	text-transform: uppercase;
 	background: var(--bg);
-	border-bottom: 1px solid var(--border);
+	border-top: 1px solid var(--border);
+	border-bottom: 1px solid var(--border-soft);
+	line-height: 1.6;
+}
+#stream .transition .transition-value a,
+.transition .transition-value a {
+	color: var(--muted);
+	font-weight: 600;
+}
+#stream .transition .transition-value a:hover { color: var(--text); }
+/* hide the stray ⏭ "next day" icon — feels like noise next to the date */
+#stream .transition .transition-next,
+.transition-next { display: none; }
+/* ghost watermark of current feed on right */
+.transition .name {
+	font-family: var(--font-body);
+	font-style: italic;
+	color: var(--muted);
+	opacity: .35;
+	text-transform: none;
+	letter-spacing: -0.01em;
+	font-size: 18px;
 }
 
 /* feed-name watermark (right-edge ghost) */
@@ -414,21 +446,32 @@ body.aside-hidden #sidebar { display: none; }
 .flux {
 	background: var(--bg);
 	border-bottom: 1px solid var(--border);
-	padding: var(--row-py) var(--row-px);
+	border-left: 0 !important;        /* envelope icon already signals unread */
+	padding: 0;
 	color: var(--text);
 	transition: background-color .1s ease;
 }
-#stream .flux:nth-child(even) { background: var(--row-alt); }
+#stream .flux.not_read,
+#stream .flux.favorite,
+#stream .flux.current { border-left: 0 !important; }
+/* tighter row inner padding (overrides frss.css 0.5rem default) */
+#stream .flux .flux_header .item .item-element {
+	padding-top: 6px;
+	padding-bottom: 6px;
+	line-height: 1.45;
+}
+/* zebra striping — use of-type since the day separator sits among the .flux siblings */
+#stream .flux:nth-of-type(even) { background: var(--row-alt); }
 #stream .flux:hover { background: var(--hover); }
 
-/* unread vs read */
-#stream .flux.not_read .title,
-.flux.not_read .title {
+/* unread vs read — punchy hierarchy */
+#stream .flux.not_read .item .title,
+#stream .flux.not_read .title {
 	color: var(--text);
-	font-weight: 500;
+	font-weight: 600;
 }
-#stream .flux:not(.not_read) .title,
-.flux:not(.not_read) .title {
+#stream .flux:not(.not_read) .item .title,
+#stream .flux:not(.not_read) .title {
 	color: var(--read);
 	font-weight: 400;
 }
