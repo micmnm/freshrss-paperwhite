@@ -1,4 +1,5 @@
 .claude/
 .DS_Store
-preview/local-freshrss/config/
-preview/local-freshrss/*.png
+
+# dev-only — visual mocks and local FreshRSS docker setup for screenshot iteration
+preview/
