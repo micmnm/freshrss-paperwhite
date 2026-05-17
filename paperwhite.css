@@ -434,6 +434,22 @@ aside#sidebar {
 	background: var(--side-bg-2);
 }
 
+/* Force sidebar icons to monochrome white so they're crisp on dark graphite.
+ * brightness(0) flattens any colour to black, invert(1) flips to white.
+ * Slight opacity so they don't compete with text. */
+#sidebar .icon,
+#sidebar a .icon,
+#sidebar button .icon,
+#sidebar img.icon {
+	filter: brightness(0) invert(1);
+	opacity: .85;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+#sidebar .active .icon,
+#sidebar .tree-folder.active > .tree-folder-title .icon { opacity: 1; }
+
 /* bottom navigation arrows */
 #sidebar .nav_menu_bottom,
 #nav_menu_buttons,
