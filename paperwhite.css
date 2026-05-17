@@ -43,8 +43,8 @@
 	--radius-sm:    6px;
 	--shadow-card:  0 1px 2px rgba(28, 25, 23, .04), 0 6px 24px rgba(28, 25, 23, .06);
 
-	/* spacing — comfortable */
-	--row-py:       11px;
+	/* spacing — comfortable (stacks on top of frss.css's own padding, keep small) */
+	--row-py:       4px;
 	--row-px:       20px;
 	--reader-py:    36px;
 	--reader-px:    48px;
@@ -302,11 +302,21 @@ aside#sidebar {
 #sidebar .tree-folder-title:hover,
 #sidebar .feed:hover { background: var(--side-hover); color: var(--side-text); }
 
-#sidebar .active > a,
-#sidebar .feed.active > a,
+/* Active sidebar item — graphite, not Origine's blue */
+#sidebar .nav-list .item.active,
+#sidebar .nav-list .nav-section .item.active:hover a,
+#sidebar .nav-list .nav-section .item.active:hover .as-link,
 #sidebar .tree-folder.active > .tree-folder-title,
+#sidebar .tree-folder-items > .item.active,
+#sidebar .feed.active > a,
 #sidebar a.active {
 	background: var(--side-active);
+	color: var(--side-text);
+}
+#sidebar .nav-list .item.active a,
+#sidebar .nav-list .item.active .as-link,
+#sidebar .tree-folder-items > .item.active > a,
+#sidebar .tree-folder.active > .tree-folder-title .title {
 	color: var(--side-text);
 }
 
@@ -520,9 +530,9 @@ body.aside-hidden #sidebar { display: none; }
 	letter-spacing: -0.01em;
 }
 
-/* expanded flux body inside magazine */
+/* Expanded flux body — only style when actually shown, not collapsed */
 .flux.active .flux_content,
-.flux_content {
+#stream.reader .flux .flux_content {
 	background: var(--surface);
 	color: var(--text);
 	border-radius: var(--radius);
@@ -571,9 +581,9 @@ body.aside-hidden #sidebar { display: none; }
 }
 
 /* ============================================================
-   Article reading pane (.flux_content / .content)
+   Article reading pane (.flux_content / .content) — only when active
    ============================================================ */
-.flux_content {
+.flux.active .flux_content {
 	background: var(--surface);
 	color: var(--text);
 }

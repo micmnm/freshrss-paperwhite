@@ -2,7 +2,7 @@
 	"name": "Paperwhite",
 	"author": "mircea",
 	"description": "Readability-first, macOS-inspired theme. SF Pro UI + New York body, warm-paper light & soft-warm dark, mid-tone graphite sidebar. Light/dark follows system; toggle in Settings → Display.",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"files": ["_frss.css", "paperwhite.css"],
 	"theme-color": {"dark": "#1c1917", "light": "#fbf8f3"}
 }
