@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Paperwhite — FreshRSS preview</title>
+<style>
+  /* === Design tokens ========================================= */
+  :root {
+    --font-ui:   -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    --font-body: "New York", ui-serif, Charter, Georgia, "Times New Roman", serif;
+    --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+    /* light — warm paper */
+    --bg:        #fbf8f3;
+    --surface:   #ffffff;
+    --header-bg: #f5f0e6;
+    --border:    #ece6dc;
+    --text:      #1c1917;
+    --muted:     #78716c;
+    --read:      #a8a29e;
+    --accent:    #1c1c1e;       /* graphite */
+    --accent-hover: #44403c;
+    --selected:  rgba(28,28,30,.06);
+    --hover:     rgba(28,28,30,.04);
+    --unread-dot:#c2410c;       /* warm orange — kept as semantic "unread" signal */
+    --error:     #b91c1c;
+    --row-alt:   #faf6ef;
+
+    /* sidebar — mid-tone graphite (neutral, same hue in both modes) */
+    --side-bg:    #3f3f46;
+    --side-bg-2:  #52525b;
+    --side-text:  #fafafa;
+    --side-muted: #a1a1aa;
+    --side-border:#27272a;
+    --side-active:#52525b;
+  }
+  .dark {
+    --bg:        #1c1917;
+    --surface:   #292524;
+    --header-bg: #1c1917;
+    --border:    #44403c;
+    --text:      #f5f5f4;
+    --muted:     #a8a29e;
+    --read:      #78716c;
+    --accent:    #e5e5e7;
+    --accent-hover: #fafaf9;
+    --selected:  rgba(245,245,244,.08);
+    --hover:     rgba(245,245,244,.04);
+    --unread-dot:#fb923c;
+    --error:     #f87171;
+    --row-alt:   #211d1b;
+
+    --side-bg:    #27272a;       /* slightly darker than article in dark mode */
+    --side-bg-2:  #3f3f46;
+    --side-text:  #fafafa;
+    --side-muted: #a1a1aa;
+    --side-border:#18181b;
+    --side-active:#3f3f46;
+  }
+
+  /* === Page chrome =========================================== */
+  html, body { margin: 0; padding: 0; background: #0a0a0a; font-family: var(--font-ui); }
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 32px 24px 64px;
+    max-width: 1700px;
+    margin: 0 auto;
+  }
+  @media (min-width: 1500px) {
+    .stage { grid-template-columns: 1fr 1fr; }
+  }
+  .stage h2 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    margin: 0 0 10px;
+  }
+  .frame {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+  .frame .titlebar {
+    height: 28px;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+  }
+  .frame .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .titlebar .r { background: #ff5f57; }
+  .titlebar .y { background: #febc2e; }
+  .titlebar .g { background: #28c840; }
+  .frame .titlebar .t {
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* === Top header (FreshRSS) ================================= */
+  .header {
+    display: grid;
+    grid-template-columns: 260px 1fr 60px;
+    align-items: center;
+    height: 64px;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+  }
+  .header .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 18px; letter-spacing: -0.01em;
+  }
+  .header .logo .mark {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: conic-gradient(from 180deg at 50% 50%, var(--accent) 0deg, var(--muted) 360deg);
+    position: relative;
+  }
+  .header .logo .mark::after {
+    content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--header-bg);
+  }
+  .header .search {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 8px;
+  }
+  .header .search svg { color: var(--muted); }
+  .header .settings {
+    justify-self: end;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .header .settings:hover { background: var(--hover); }
+
+  /* === Action toolbar ======================================== */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 48px;
+    padding: 0 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .tb-group { display: flex; align-items: center; gap: 2px; }
+  .tb-sep { width: 1px; height: 22px; background: var(--border); margin: 0 6px; }
+  .tb {
+    height: 30px; min-width: 30px; padding: 0 8px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .tb:hover { background: var(--hover); }
+  .tb.active { background: var(--selected); color: var(--accent); }
+  .tb.primary {
+    background: var(--accent); color: var(--bg);
+    border-color: var(--accent);
+  }
+  .tb.primary:hover { background: var(--accent-hover); }
+  .tb .caret { opacity: .5; font-size: 10px; }
+  .tb .badge { background: var(--unread-dot); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 8px; font-weight: 600; }
+  .tb-spacer { flex: 1; }
+
+  /* === 3-pane layout ========================================= */
+  .app {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    height: 660px;
+  }
+
+  /* sidebar */
+  .sidebar {
+    background: var(--side-bg);
+    color: var(--side-text);
+    border-right: 1px solid var(--side-border);
+    overflow: auto;
+    display: flex; flex-direction: column;
+    font-size: 13px;
+  }
+  .sub-mgmt {
+    margin: 12px 12px 6px;
+    padding: 10px 14px;
+    background: var(--side-bg-2);
+    color: var(--side-text);
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .sub-mgmt:hover { background: var(--accent-hover); border-color: var(--side-border); }
+  .sub-mgmt .plus {
+    width: 22px; height: 22px; border-radius: 5px;
+    background: rgba(255,255,255,.1);
+    display: grid; place-items: center;
+    font-size: 14px; line-height: 1;
+  }
+  .side-list { padding: 4px 6px 8px; flex: 1; }
+  .side-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--side-text);
+    cursor: pointer;
+    user-select: none;
+  }
+  .side-row .ico {
+    width: 16px; height: 16px;
+    display: grid; place-items: center;
+    color: var(--side-muted);
+    flex-shrink: 0;
+  }
+  .side-row .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .side-row .count {
+    background: rgba(255,255,255,.08);
+    color: var(--side-text);
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 9px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .side-row:hover { background: rgba(255,255,255,.05); }
+  .side-row.active { background: var(--side-active); }
+  .side-row.active .count { background: rgba(255,255,255,.15); }
+  .side-row.error .ico { color: var(--error); }
+  .side-row.child {
+    padding-left: 26px;
+    font-size: 12.5px;
+  }
+  .side-row.child .favicon {
+    width: 14px; height: 14px;
+    background: #f4c01f;
+    color: #000;
+    font-size: 9px;
+    font-weight: 700;
+    display: grid; place-items: center;
+    border-radius: 2px;
+  }
+  .side-row.child .gear {
+    color: var(--side-muted);
+    font-size: 11px;
+    opacity: .6;
+  }
+  .group-head .disc {
+    color: var(--side-muted);
+    font-size: 9px;
+    width: 10px;
+    transition: transform .15s ease;
+  }
+  .group-head.open .disc { transform: rotate(90deg); }
+  .side-nav-bottom {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--side-border);
+  }
+  .side-nav-bottom button {
+    width: 32px; height: 28px;
+    background: transparent;
+    color: var(--side-muted);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .side-nav-bottom button:hover { background: rgba(255,255,255,.06); color: var(--side-text); }
+
+  /* article list (list view) */
+  .stream {
+    background: var(--bg);
+    overflow: auto;
+    position: relative;
+  }
+  .stream .day-header {
+    padding: 14px 20px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .stream .watermark {
+    position: absolute;
+    top: 14px;
+    right: 20px;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--muted);
+    opacity: .35;
+    pointer-events: none;
+    letter-spacing: -0.01em;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 22px 22px 22px 110px 1fr 150px 18px;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .row:nth-child(even) { background: var(--row-alt); }
+  .row:hover { background: var(--hover); }
+  .row.active { background: var(--selected); }
+  .row .env {
+    color: var(--unread-dot);
+    font-size: 14px;
+    display: grid; place-items: center;
+  }
+  .row.read .env { color: var(--muted); opacity: .4; }
+  .row .star {
+    color: var(--muted);
+    font-size: 14px;
+    opacity: .5;
+  }
+  .row.fav .star { color: var(--unread-dot); opacity: 1; }
+  .row .favicon {
+    width: 16px; height: 16px;
+    background: #f4c01f;
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    display: grid; place-items: center;
+    border-radius: 2px;
+  }
+  .row .source {
+    color: var(--accent);
+    font-weight: 500;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row .title {
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.005em;
+  }
+  .row.read .title { color: var(--read); font-weight: 400; }
+  .row .when {
+    color: var(--muted);
+    font-size: 12px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .row .ext {
+    color: var(--muted);
+    opacity: .5;
+    font-size: 13px;
+    display: grid; place-items: center;
+  }
+
+  /* === footer caption ======================================== */
+  .caption {
+    color: #888;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    text-align: center;
+    padding: 16px 24px 0;
+    line-height: 1.6;
+  }
+  .caption code { color: #ddd; font-family: var(--font-mono); font-size: 12px; background: #1c1c1e; padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- LIGHT MODE -->
+  <div>
+    <h2>Light · warm paper · graphite sidebar</h2>
+    <div class="frame">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="t">FreshRSS — Paperwhite</span>
+      </div>
+
+      <!-- top header -->
+      <div class="header">
+        <div class="logo"><span class="mark"></span>FreshRSS</div>
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          Search words or #tags
+        </div>
+        <div class="settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+
+      <!-- action toolbar -->
+      <div class="toolbar">
+        <div class="tb-group">
+          <button class="tb" title="All">📥</button>
+          <button class="tb active" title="Unread">✉ <span class="badge">12</span></button>
+          <button class="tb" title="Starred">★</button>
+          <button class="tb" title="Favorites">☆</button>
+          <button class="tb" title="Bookmarks">🔖</button>
+        </div>
+        <div class="tb-sep"></div>
+        <button class="tb">Mark as read <span class="caret">▾</span></button>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb active" title="List">≡</button>
+          <button class="tb" title="Grid">▦</button>
+          <button class="tb" title="Magazine">▤</button>
+        </div>
+        <div class="tb-sep"></div>
+        <button class="tb">Filter <span class="caret">▾</span></button>
+        <button class="tb">↻</button>
+        <div class="tb-spacer"></div>
+      </div>
+
+      <div class="app">
+        <!-- sidebar -->
+        <aside class="sidebar">
+          <button class="sub-mgmt">Subscription management <span class="plus">+</span></button>
+          <div class="side-list">
+            <div class="side-row"><span class="ico">≡</span><span class="name">Main stream</span><span class="count">57</span></div>
+            <div class="side-row"><span class="ico">📌</span><span class="name">Important feeds</span><span class="count">—</span></div>
+            <div class="side-row"><span class="ico">★</span><span class="name">Favourites (13)</span></div>
+
+            <div class="side-row group-head"><span class="disc">▸</span><span class="name">Gloguri</span><span class="count">4</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="name">LifeStyle</span><span class="count">7</span></div>
+            <div class="side-row group-head error"><span class="disc">▸</span><span class="ico">⚠</span><span class="name">Programare</span><span class="count">3</span></div>
+            <div class="side-row group-head error"><span class="disc">▸</span><span class="ico">⚠</span><span class="name">visual</span><span class="count">1</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="ico">📺</span><span class="name">Watch</span><span class="count">1</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="ico">🍎</span><span class="name">Apple</span><span class="count">11</span></div>
+            <div class="side-row group-head open active error"><span class="disc">▸</span><span class="ico">⚠</span><span class="name">DaNews</span><span class="count">30</span></div>
+            <div class="side-row child active"><span class="gear">⚙</span><span class="favicon">K</span><span class="name">Kottke</span><span class="count">30</span></div>
+          </div>
+          <div class="side-nav-bottom">
+            <button title="Previous">‹</button>
+            <button title="Up">∧</button>
+            <button title="Next">›</button>
+          </div>
+        </aside>
+
+        <!-- article list (list view) -->
+        <section class="stream">
+          <div class="watermark">Kottke</div>
+          <div class="day-header">Received before yesterday</div>
+          <div class="row">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">The Night Witches: The Female Nazi Hunters of WWII</span>
+            <span class="when">15 May 2026 at 21:58</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">25 Books That Capture This American Moment. They…</span>
+            <span class="when">15 May 2026 at 21:07</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row fav">
+            <span class="env">✉</span>
+            <span class="star">★</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">Software Developers Say AI Is Rotting Their Brains…</span>
+            <span class="when">15 May 2026 at 20:31</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row active">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">On "rich guy has an opinion" journalism</span>
+            <span class="when">15 May 2026 at 19:48</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">World History Timeline</span>
+            <span class="when">15 May 2026 at 19:00</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row read">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">New York's Neue Galerie Will Merge With the Metropolitan…</span>
+            <span class="when">15 May 2026 at 18:11</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row read">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">The Neanderthal dentist: archaeologists found evidence…</span>
+            <span class="when">15 May 2026 at 17:47</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row read">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">Sarah Rose (who is blind): "Meta glasses are…"</span>
+            <span class="when">15 May 2026 at 16:56</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row read">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">How Russell Vought Became the Shadow President</span>
+            <span class="when">14 May 2026 at 23:00</span>
+            <span class="ext">↗</span>
+          </div>
+          <div class="row read">
+            <span class="env">✉</span>
+            <span class="star">☆</span>
+            <span class="favicon">K</span>
+            <span class="source">Kottke</span>
+            <span class="title">Omg, Amazon Prime inserted an ad for Febreze in the…</span>
+            <span class="when">14 May 2026 at 21:35</span>
+            <span class="ext">↗</span>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- DARK MODE -->
+  <div class="dark">
+    <h2 style="color:#888">Dark · soft warm · graphite sidebar</h2>
+    <div class="frame">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="t">FreshRSS — Paperwhite</span>
+      </div>
+
+      <div class="header">
+        <div class="logo"><span class="mark"></span>FreshRSS</div>
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          Search words or #tags
+        </div>
+        <div class="settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tb-group">
+          <button class="tb">📥</button>
+          <button class="tb active">✉ <span class="badge">12</span></button>
+          <button class="tb">★</button>
+          <button class="tb">☆</button>
+          <button class="tb">🔖</button>
+        </div>
+        <div class="tb-sep"></div>
+        <button class="tb">Mark as read <span class="caret">▾</span></button>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb active">≡</button>
+          <button class="tb">▦</button>
+          <button class="tb">▤</button>
+        </div>
+        <div class="tb-sep"></div>
+        <button class="tb">Filter <span class="caret">▾</span></button>
+        <button class="tb">↻</button>
+        <div class="tb-spacer"></div>
+      </div>
+
+      <div class="app">
+        <aside class="sidebar">
+          <button class="sub-mgmt">Subscription management <span class="plus">+</span></button>
+          <div class="side-list">
+            <div class="side-row"><span class="ico">≡</span><span class="name">Main stream</span><span class="count">57</span></div>
+            <div class="side-row"><span class="ico">📌</span><span class="name">Important feeds</span><span class="count">—</span></div>
+            <div class="side-row"><span class="ico">★</span><span class="name">Favourites (13)</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="name">Gloguri</span><span class="count">4</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="name">LifeStyle</span><span class="count">7</span></div>
+            <div class="side-row group-head error"><span class="disc">▸</span><span class="ico">⚠</span><span class="name">Programare</span><span class="count">3</span></div>
+            <div class="side-row group-head error"><span class="disc">▸</span><span class="ico">⚠</span><span class="name">visual</span><span class="count">1</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="ico">📺</span><span class="name">Watch</span><span class="count">1</span></div>
+            <div class="side-row group-head"><span class="disc">▸</span><span class="ico">🍎</span><span class="name">Apple</span><span class="count">11</span></div>
+            <div class="side-row group-head open active error"><span class="disc">▸</span><span class="ico">⚠</span><span class="name">DaNews</span><span class="count">30</span></div>
+            <div class="side-row child active"><span class="gear">⚙</span><span class="favicon">K</span><span class="name">Kottke</span><span class="count">30</span></div>
+          </div>
+          <div class="side-nav-bottom">
+            <button title="Previous">‹</button>
+            <button title="Up">∧</button>
+            <button title="Next">›</button>
+          </div>
+        </aside>
+
+        <section class="stream">
+          <div class="watermark">Kottke</div>
+          <div class="day-header">Received before yesterday</div>
+          <div class="row"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">The Night Witches: The Female Nazi Hunters of WWII</span><span class="when">15 May 2026 at 21:58</span><span class="ext">↗</span></div>
+          <div class="row"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">25 Books That Capture This American Moment. They…</span><span class="when">15 May 2026 at 21:07</span><span class="ext">↗</span></div>
+          <div class="row fav"><span class="env">✉</span><span class="star">★</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">Software Developers Say AI Is Rotting Their Brains…</span><span class="when">15 May 2026 at 20:31</span><span class="ext">↗</span></div>
+          <div class="row active"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">On "rich guy has an opinion" journalism</span><span class="when">15 May 2026 at 19:48</span><span class="ext">↗</span></div>
+          <div class="row"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">World History Timeline</span><span class="when">15 May 2026 at 19:00</span><span class="ext">↗</span></div>
+          <div class="row read"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">New York's Neue Galerie Will Merge With the Metropolitan…</span><span class="when">15 May 2026 at 18:11</span><span class="ext">↗</span></div>
+          <div class="row read"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">The Neanderthal dentist: archaeologists found evidence…</span><span class="when">15 May 2026 at 17:47</span><span class="ext">↗</span></div>
+          <div class="row read"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">Sarah Rose (who is blind): "Meta glasses are…"</span><span class="when">15 May 2026 at 16:56</span><span class="ext">↗</span></div>
+          <div class="row read"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">How Russell Vought Became the Shadow President</span><span class="when">14 May 2026 at 23:00</span><span class="ext">↗</span></div>
+          <div class="row read"><span class="env">✉</span><span class="star">☆</span><span class="favicon">K</span><span class="source">Kottke</span><span class="title">Omg, Amazon Prime inserted an ad for Febreze in the…</span><span class="when">14 May 2026 at 21:35</span><span class="ext">↗</span></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    Mock of <strong>your actual FreshRSS layout</strong>: header, action toolbar, list-view rows, sidebar groups with counts &amp; warnings, bottom nav arrows, feed watermark.
+    <br>Unread = warm orange envelope &amp; dot (semantic), everything else graphite. Open both modes (resize wider to see them side-by-side).
+    <br><br>Reply <code>go</code> to generate the theme, or tell me what to tweak.
+  </div>
+
+</div>
+</body>
+</html>

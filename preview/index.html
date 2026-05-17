@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FreshRSS theme — visual picker</title>
+<style>
+  :root {
+    --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    --ny: "New York", ui-serif, Charter, Georgia, "Times New Roman", serif;
+    --page-bg: #f5f5f7;
+    --card-bg: #ffffff;
+    --card-border: #e5e5ea;
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+    --shadow: 0 1px 3px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+  }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--ui);
+    background: var(--page-bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    padding: 32px 24px 80px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 720px; }
+  h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 36px 0 12px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .card .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .card .pick {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0071e3;
+    user-select: all;
+    cursor: pointer;
+  }
+  .card h3 {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  .body { font-size: 15px; line-height: 1.6; }
+  .body p { margin: 0 0 10px; }
+
+  /* font-stack variants */
+  .stack-sf  { font-family: var(--ui); }
+  .stack-sf h3, .stack-sf .body { font-family: var(--ui); }
+  .stack-mixed h3 { font-family: var(--ui); }
+  .stack-mixed .body { font-family: var(--ny); font-size: 16px; line-height: 1.65; }
+  .stack-mono h3 { font-family: var(--ui); }
+  .stack-mono .body { font-family: var(--ui); }
+  .stack-mono code, .stack-mono pre { font-family: var(--mono); }
+
+  /* density */
+  .density-comfortable .row { padding: 14px 4px; }
+  .density-comfortable .row + .row { border-top: 1px solid var(--card-border); }
+  .density-comfortable .row .t { font-size: 16px; font-weight: 500; }
+  .density-comfortable .row .m { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .density-balanced .row { padding: 9px 4px; }
+  .density-balanced .row + .row { border-top: 1px solid var(--card-border); }
+  .density-balanced .row .t { font-size: 15px; font-weight: 500; }
+  .density-balanced .row .m { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .density-compact .row { padding: 5px 4px; display: flex; gap: 10px; align-items: baseline; }
+  .density-compact .row + .row { border-top: 1px solid var(--card-border); }
+  .density-compact .row .t { font-size: 14px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .density-compact .row .m { font-size: 12px; color: var(--muted); }
+
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #0a84ff; margin-right: 8px; vertical-align: middle; }
+  .read .dot { background: transparent; }
+  .read .t { color: var(--muted); font-weight: 400; }
+
+  /* color palettes */
+  .swatches { display: flex; gap: 6px; margin: 8px 0 12px; flex-wrap: wrap; }
+  .sw { width: 56px; }
+  .sw .chip { height: 40px; border-radius: 6px; border: 1px solid rgba(0,0,0,.06); }
+  .sw .hex { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; text-align: center; }
+
+  /* sample article inside palette card */
+  .palette-sample {
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 8px;
+    border: 1px solid;
+  }
+  .palette-sample .title { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+  .palette-sample .meta-line { font-size: 12px; margin-bottom: 8px; }
+  .palette-sample p { margin: 0 0 6px; font-size: 14px; line-height: 1.6; }
+  .palette-sample a { text-decoration: none; }
+  .palette-sample a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* light variants */
+  .pal-pure-white  { background:#ffffff; color:#1d1d1f; border-color:#e5e5ea; }
+  .pal-pure-white .meta-line { color:#6e6e73; }
+  .pal-pure-white a { color: var(--accent, #0071e3); }
+  .pal-warm-paper  { background:#fbf8f3; color:#1c1917; border-color:#ece6dc; }
+  .pal-warm-paper .meta-line { color:#78716c; }
+  .pal-warm-paper a { color: var(--accent, #c2410c); }
+  /* dark variants */
+  .pal-true-black  { background:#000000; color:#f2f2f7; border-color:#1c1c1e; }
+  .pal-true-black .meta-line { color:#8e8e93; }
+  .pal-true-black a { color: var(--accent, #0a84ff); }
+  .pal-graphite    { background:#1c1c1e; color:#f2f2f7; border-color:#2c2c2e; }
+  .pal-graphite .meta-line { color:#98989d; }
+  .pal-graphite a { color: var(--accent, #0a84ff); }
+  .pal-soft-dark   { background:#1c1917; color:#f5f5f4; border-color:#292524; }
+  .pal-soft-dark .meta-line { color:#a8a29e; }
+  .pal-soft-dark a { color: var(--accent, #fb923c); }
+
+  /* accent demos */
+  .accent-demo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    margin-top: 8px;
+  }
+  .accent-demo .badge { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; }
+  .accent-demo .link { font-weight: 500; }
+  .accent-demo .btn {
+    margin-left: auto;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--card-border);
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 720px;
+  }
+  footer code {
+    font-family: var(--mono);
+    background: var(--card-border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<h1>FreshRSS theme — visual picker</h1>
+<p class="lede">Pick one from each group below. Each card shows the option's ID in the top-right — tell me the IDs (e.g. <em>font-mixed, density-comfortable, accent-blue, light-paper, dark-soft</em>) and I'll generate the theme.</p>
+
+<h2>1 — Font stack</h2>
+<div class="grid">
+  <div class="card stack-sf">
+    <div class="label">All SF Pro (UI)</div>
+    <div class="pick">font-sf</div>
+    <h3>How the macOS WWDC keynote handled developer expectations</h3>
+    <div class="meta">The Verge · 2h · 5 min read</div>
+    <div class="body">
+      <p>Apple’s engineering teams spent the morning walking through new APIs, with a heavy emphasis on readability and density. The tone was deliberate — fewer slides, more demos.</p>
+      <p>Numbers stay tabular for tables: 1,234.56 / 9,870.12.</p>
+    </div>
+  </div>
+
+  <div class="card stack-mixed">
+    <div class="label">SF Pro UI + New York body</div>
+    <div class="pick">font-mixed</div>
+    <h3>How the macOS WWDC keynote handled developer expectations</h3>
+    <div class="meta">The Verge · 2h · 5 min read</div>
+    <div class="body">
+      <p>Apple’s engineering teams spent the morning walking through new APIs, with a heavy emphasis on readability and density. The tone was deliberate — fewer slides, more demos.</p>
+      <p>Numbers stay tabular for tables: 1,234.56 / 9,870.12.</p>
+    </div>
+  </div>
+
+  <div class="card stack-mono">
+    <div class="label">SF Pro + SF Mono code</div>
+    <div class="pick">font-mono</div>
+    <h3>How the macOS WWDC keynote handled developer expectations</h3>
+    <div class="meta">The Verge · 2h · 5 min read</div>
+    <div class="body">
+      <p>Apple’s engineering teams spent the morning walking through new APIs. Inline <code>SF Mono</code> for code blocks:</p>
+<pre style="background:#f5f5f7;padding:8px 10px;border-radius:6px;font-size:12px;margin:0;">let theme = Theme(name: "mytheme")</pre>
+    </div>
+  </div>
+</div>
+
+<h2>2 — List density</h2>
+<div class="grid">
+  <div class="card density-comfortable">
+    <div class="label">Comfortable</div>
+    <div class="pick">density-comfortable</div>
+    <div class="row"><div class="t"><span class="dot"></span>Apple unveils Vision Pro 2 with lighter design</div><div class="m">The Verge · 2h · 5 min read</div></div>
+    <div class="row"><div class="t"><span class="dot"></span>Why Swift 7 finally fixes async actor reentrancy</div><div class="m">Hacker News · 4h · 12 min read</div></div>
+    <div class="row read"><div class="t"><span class="dot"></span>The state of native macOS apps in 2026</div><div class="m">Daring Fireball · 1d</div></div>
+  </div>
+
+  <div class="card density-balanced">
+    <div class="label">Balanced</div>
+    <div class="pick">density-balanced</div>
+    <div class="row"><div class="t"><span class="dot"></span>Apple unveils Vision Pro 2 with lighter design</div><div class="m">The Verge · 2h</div></div>
+    <div class="row"><div class="t"><span class="dot"></span>Why Swift 7 finally fixes async actor reentrancy</div><div class="m">Hacker News · 4h</div></div>
+    <div class="row read"><div class="t"><span class="dot"></span>The state of native macOS apps in 2026</div><div class="m">Daring Fireball · 1d</div></div>
+    <div class="row read"><div class="t"><span class="dot"></span>FreshRSS 1.27 adds embed previews</div><div class="m">FreshRSS Blog · 2d</div></div>
+  </div>
+
+  <div class="card density-compact">
+    <div class="label">Compact</div>
+    <div class="pick">density-compact</div>
+    <div class="row"><div class="t"><span class="dot"></span>Apple unveils Vision Pro 2 with lighter design</div><div class="m">2h</div></div>
+    <div class="row"><div class="t"><span class="dot"></span>Why Swift 7 finally fixes async actor reentrancy</div><div class="m">4h</div></div>
+    <div class="row read"><div class="t"><span class="dot"></span>The state of native macOS apps in 2026</div><div class="m">1d</div></div>
+    <div class="row read"><div class="t"><span class="dot"></span>FreshRSS 1.27 adds embed previews</div><div class="m">2d</div></div>
+    <div class="row read"><div class="t"><span class="dot"></span>Tiny CSS-only spinners worth stealing</div><div class="m">3d</div></div>
+  </div>
+</div>
+
+<h2>3 — Accent color</h2>
+<div class="grid">
+  <div class="card">
+    <div class="label">macOS Blue</div>
+    <div class="pick">accent-blue</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#0071e3"></div><div class="hex">#0071e3</div></div>
+      <div class="sw"><div class="chip" style="background:#0a84ff"></div><div class="hex">#0a84ff</div></div>
+    </div>
+    <div class="accent-demo">
+      <span class="badge" style="background:#0071e3"></span>
+      <span class="link" style="color:#0071e3">Read full article →</span>
+      <span class="btn" style="background:#0071e3">Subscribe</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Graphite (neutral)</div>
+    <div class="pick">accent-graphite</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#1c1c1e"></div><div class="hex">#1c1c1e</div></div>
+      <div class="sw"><div class="chip" style="background:#e5e5e7"></div><div class="hex">#e5e5e7</div></div>
+    </div>
+    <div class="accent-demo">
+      <span class="badge" style="background:#1c1c1e"></span>
+      <span class="link" style="color:#1c1c1e;text-decoration:underline;text-underline-offset:3px;">Read full article →</span>
+      <span class="btn" style="background:#1c1c1e">Subscribe</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Warm orange</div>
+    <div class="pick">accent-orange</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#c2410c"></div><div class="hex">#c2410c</div></div>
+      <div class="sw"><div class="chip" style="background:#fb923c"></div><div class="hex">#fb923c</div></div>
+    </div>
+    <div class="accent-demo">
+      <span class="badge" style="background:#c2410c"></span>
+      <span class="link" style="color:#c2410c">Read full article →</span>
+      <span class="btn" style="background:#c2410c">Subscribe</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">macOS Green</div>
+    <div class="pick">accent-green</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#34c759"></div><div class="hex">#34c759</div></div>
+      <div class="sw"><div class="chip" style="background:#30d158"></div><div class="hex">#30d158</div></div>
+    </div>
+    <div class="accent-demo">
+      <span class="badge" style="background:#34c759"></span>
+      <span class="link" style="color:#248a3d">Read full article →</span>
+      <span class="btn" style="background:#34c759">Subscribe</span>
+    </div>
+  </div>
+</div>
+
+<h2>4 — Light mode background</h2>
+<div class="grid">
+  <div class="card">
+    <div class="label">Pure white</div>
+    <div class="pick">light-white</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#ffffff;border:1px solid #e5e5ea"></div><div class="hex">#ffffff</div></div>
+      <div class="sw"><div class="chip" style="background:#f5f5f7"></div><div class="hex">#f5f5f7</div></div>
+      <div class="sw"><div class="chip" style="background:#1d1d1f"></div><div class="hex">#1d1d1f</div></div>
+      <div class="sw"><div class="chip" style="background:#6e6e73"></div><div class="hex">#6e6e73</div></div>
+    </div>
+    <div class="palette-sample pal-pure-white">
+      <div class="title">Apple unveils Vision Pro 2</div>
+      <div class="meta-line">The Verge · 2h ago</div>
+      <p>Headlines stay dark and crisp on white. Muted greys carry meta info — date, source, reading time — without competing with the title.</p>
+      <p><a href="#">Read full article →</a></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Warm paper</div>
+    <div class="pick">light-paper</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#fbf8f3"></div><div class="hex">#fbf8f3</div></div>
+      <div class="sw"><div class="chip" style="background:#f5f0e6"></div><div class="hex">#f5f0e6</div></div>
+      <div class="sw"><div class="chip" style="background:#1c1917"></div><div class="hex">#1c1917</div></div>
+      <div class="sw"><div class="chip" style="background:#78716c"></div><div class="hex">#78716c</div></div>
+    </div>
+    <div class="palette-sample pal-warm-paper">
+      <div class="title">Apple unveils Vision Pro 2</div>
+      <div class="meta-line">The Verge · 2h ago</div>
+      <p>Cream paper is easier on the eyes in long reading sessions, and pairs especially well with serif body text or warm accents like terracotta.</p>
+      <p><a href="#">Read full article →</a></p>
+    </div>
+  </div>
+</div>
+
+<h2>5 — Dark mode background</h2>
+<div class="grid">
+  <div class="card" style="background:#0e0e10;color:#f2f2f7;border-color:#1c1c1e">
+    <div class="label" style="color:#8e8e93">True black (OLED)</div>
+    <div class="pick">dark-black</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#000000;border:1px solid #1c1c1e"></div><div class="hex" style="color:#8e8e93">#000000</div></div>
+      <div class="sw"><div class="chip" style="background:#1c1c1e"></div><div class="hex" style="color:#8e8e93">#1c1c1e</div></div>
+      <div class="sw"><div class="chip" style="background:#f2f2f7;border:1px solid #1c1c1e"></div><div class="hex" style="color:#8e8e93">#f2f2f7</div></div>
+      <div class="sw"><div class="chip" style="background:#8e8e93"></div><div class="hex" style="color:#8e8e93">#8e8e93</div></div>
+    </div>
+    <div class="palette-sample pal-true-black">
+      <div class="title">Apple unveils Vision Pro 2</div>
+      <div class="meta-line">The Verge · 2h ago</div>
+      <p>True black saves pixels on OLED displays and creates strong card edges. Best paired with high-contrast off-white text.</p>
+      <p><a href="#">Read full article →</a></p>
+    </div>
+  </div>
+
+  <div class="card" style="background:#0e0e10;color:#f2f2f7;border-color:#1c1c1e">
+    <div class="label" style="color:#8e8e93">Graphite (macOS dark)</div>
+    <div class="pick">dark-graphite</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#1c1c1e"></div><div class="hex" style="color:#8e8e93">#1c1c1e</div></div>
+      <div class="sw"><div class="chip" style="background:#2c2c2e"></div><div class="hex" style="color:#8e8e93">#2c2c2e</div></div>
+      <div class="sw"><div class="chip" style="background:#f2f2f7;border:1px solid #1c1c1e"></div><div class="hex" style="color:#8e8e93">#f2f2f7</div></div>
+      <div class="sw"><div class="chip" style="background:#98989d"></div><div class="hex" style="color:#8e8e93">#98989d</div></div>
+    </div>
+    <div class="palette-sample pal-graphite">
+      <div class="title">Apple unveils Vision Pro 2</div>
+      <div class="meta-line">The Verge · 2h ago</div>
+      <p>Matches macOS system dark mode. Softer than pure black, cards still feel layered. The most familiar choice for Mac users.</p>
+      <p><a href="#">Read full article →</a></p>
+    </div>
+  </div>
+
+  <div class="card" style="background:#0e0e10;color:#f2f2f7;border-color:#1c1c1e">
+    <div class="label" style="color:#8e8e93">Soft warm dark</div>
+    <div class="pick">dark-soft</div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#1c1917"></div><div class="hex" style="color:#8e8e93">#1c1917</div></div>
+      <div class="sw"><div class="chip" style="background:#292524"></div><div class="hex" style="color:#8e8e93">#292524</div></div>
+      <div class="sw"><div class="chip" style="background:#f5f5f4;border:1px solid #1c1c1e"></div><div class="hex" style="color:#8e8e93">#f5f5f4</div></div>
+      <div class="sw"><div class="chip" style="background:#a8a29e"></div><div class="hex" style="color:#8e8e93">#a8a29e</div></div>
+    </div>
+    <div class="palette-sample pal-soft-dark">
+      <div class="title">Apple unveils Vision Pro 2</div>
+      <div class="meta-line">The Verge · 2h ago</div>
+      <p>Warm-tinted dark — less clinical than pure graphite, pairs naturally with the warm-paper light mode for a cohesive day/night look.</p>
+      <p><a href="#">Read full article →</a></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  When ready, paste the five IDs back to me, e.g.:
+  <br><code>font-mixed, density-comfortable, accent-blue, light-paper, dark-soft</code>
+  <br><br>
+  Tip: this page only renders <em>Apple system fonts</em> when opened in Safari or Chrome on macOS — that’s the same environment FreshRSS itself will use, so what you see here is what you’ll get.
+</footer>
+
+</body>
+</html>

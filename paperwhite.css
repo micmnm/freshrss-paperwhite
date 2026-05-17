@@ -1,0 +1,805 @@
+/* Paperwhite — readability-first, macOS-inspired FreshRSS theme.
+ * Parent: Origine. Overrides only what we need; everything else inherits.
+ * Light + dark in one file; follows system, body.dark forces dark.
+ */
+
+/* ============================================================
+   Design tokens
+   ============================================================ */
+:root {
+	--font-ui:    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+	--font-body:  "New York", ui-serif, Charter, "Iowan Old Style", "Source Serif Pro", Georgia, "Times New Roman", serif;
+	--font-mono:  "SF Mono", ui-monospace, Menlo, "JetBrains Mono", Consolas, monospace;
+
+	/* light — warm paper */
+	--bg:           #fbf8f3;
+	--surface:      #ffffff;
+	--header-bg:    #f5f0e6;
+	--border:       #ece6dc;
+	--border-soft:  #f3ede2;
+	--text:         #1c1917;
+	--muted:        #78716c;
+	--read:         #a8a29e;
+	--accent:       #1c1c1e;
+	--accent-hover: #44403c;
+	--selected:     rgba(28, 28, 30, .07);
+	--hover:        rgba(28, 28, 30, .04);
+	--unread:       #c2410c;
+	--favorite:     #c2410c;
+	--error:        #b91c1c;
+	--row-alt:      #faf6ef;
+
+	--side-bg:      #3f3f46;
+	--side-bg-2:    #52525b;
+	--side-text:    #fafafa;
+	--side-muted:   #a1a1aa;
+	--side-border:  #27272a;
+	--side-active:  #52525b;
+	--side-hover:   rgba(255, 255, 255, .05);
+
+	--radius:       8px;
+	--radius-sm:    6px;
+	--shadow-card:  0 1px 2px rgba(28, 25, 23, .04), 0 6px 24px rgba(28, 25, 23, .06);
+
+	/* spacing — comfortable */
+	--row-py:       11px;
+	--row-px:       20px;
+	--reader-py:    36px;
+	--reader-px:    48px;
+	--reader-max:   680px;
+	--lh-body:      1.7;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not(.light) {
+		--bg:           #1c1917;
+		--surface:      #292524;
+		--header-bg:    #1c1917;
+		--border:       #44403c;
+		--border-soft:  #2c2724;
+		--text:         #f5f5f4;
+		--muted:        #a8a29e;
+		--read:         #78716c;
+		--accent:       #e5e5e7;
+		--accent-hover: #fafaf9;
+		--selected:     rgba(245, 245, 244, .08);
+		--hover:        rgba(245, 245, 244, .04);
+		--unread:       #fb923c;
+		--favorite:     #fb923c;
+		--error:        #f87171;
+		--row-alt:      #211d1b;
+
+		--side-bg:      #27272a;
+		--side-bg-2:    #3f3f46;
+		--side-text:    #fafafa;
+		--side-muted:   #a1a1aa;
+		--side-border:  #18181b;
+		--side-active:  #3f3f46;
+		--side-hover:   rgba(255, 255, 255, .04);
+
+		--shadow-card:  0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .4);
+	}
+}
+
+/* User-forced dark mode (Settings → Display) */
+body.dark, body.dark :root {
+	--bg:           #1c1917;
+	--surface:      #292524;
+	--header-bg:    #1c1917;
+	--border:       #44403c;
+	--border-soft:  #2c2724;
+	--text:         #f5f5f4;
+	--muted:        #a8a29e;
+	--read:         #78716c;
+	--accent:       #e5e5e7;
+	--accent-hover: #fafaf9;
+	--selected:     rgba(245, 245, 244, .08);
+	--hover:        rgba(245, 245, 244, .04);
+	--unread:       #fb923c;
+	--favorite:     #fb923c;
+	--error:        #f87171;
+	--row-alt:      #211d1b;
+	--side-bg:      #27272a;
+	--side-bg-2:    #3f3f46;
+	--side-text:    #fafafa;
+	--side-muted:   #a1a1aa;
+	--side-border:  #18181b;
+	--side-active:  #3f3f46;
+	--side-hover:   rgba(255, 255, 255, .04);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html, body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-ui);
+	font-size: 14px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+::selection { background: var(--selected); color: var(--text); }
+
+hr { border: 0; border-top: 1px solid var(--border); }
+
+/* ============================================================
+   Top header (#header)
+   ============================================================ */
+#header {
+	background: var(--header-bg);
+	border-bottom: 1px solid var(--border);
+	color: var(--text);
+	padding: 10px 20px;
+}
+
+#header .logo {
+	font-weight: 600;
+	font-size: 18px;
+	letter-spacing: -0.01em;
+	color: var(--text);
+}
+
+#header .logo a { color: var(--text); }
+
+#header #search {
+	max-width: 560px;
+}
+#header #search input[type="search"],
+#header input[type="search"] {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 8px 12px;
+	font-family: inherit;
+	font-size: 13px;
+}
+#header #search input[type="search"]:focus,
+#header input[type="search"]:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--selected);
+}
+#header #search button,
+#header .search button {
+	background: transparent;
+	border: 1px solid var(--border);
+	border-left: 0;
+	color: var(--muted);
+	border-radius: 0 var(--radius) var(--radius) 0;
+}
+#header #search button:hover { color: var(--text); background: var(--hover); }
+
+#header .configure,
+#header a.configure {
+	background: transparent;
+	color: var(--text);
+	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+}
+#header .configure:hover { background: var(--hover); }
+
+/* ============================================================
+   Action toolbar (#nav_menu_views, .nav_menu, .btn)
+   Replaces the saturated blue blocks with quiet graphite buttons.
+   ============================================================ */
+.nav_menu,
+#nav_menu_views,
+#nav_menu_actions,
+#nav_menu_read_all {
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+}
+
+.btn,
+button.btn,
+a.btn,
+.nav_menu .btn,
+.nav_menu a {
+	background: transparent;
+	color: var(--text);
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+.btn:hover,
+.nav_menu .btn:hover,
+.nav_menu a:hover { background: var(--hover); color: var(--text); }
+.btn.active,
+.btn[aria-pressed="true"],
+.nav_menu .active { background: var(--selected); color: var(--accent); border-color: var(--border); }
+
+/* primary actions (Mark as read confirm, etc.) */
+.btn.btn-important,
+.btn-important,
+button.btn-important {
+	background: var(--accent);
+	color: var(--bg);
+	border-color: var(--accent);
+}
+.btn.btn-important:hover,
+.btn-important:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--bg); }
+
+/* destructive */
+.btn.btn-attention { background: var(--error); color: #fff; border-color: var(--error); }
+.btn.btn-attention:hover { filter: brightness(.92); }
+
+/* dropdowns */
+.dropdown-menu,
+.dropdown {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	color: var(--text);
+}
+.dropdown a, .dropdown-menu a { color: var(--text); }
+.dropdown a:hover, .dropdown-menu a:hover { background: var(--hover); }
+
+/* read/unread/all view toggles — icons render via core SVG, we recolor */
+.nav_menu .btn svg,
+.nav_menu .icon { fill: currentColor; }
+
+/* ============================================================
+   Sidebar (#sidebar, .tree, .feed, .category)
+   Mid-tone graphite, neutral hue in both modes.
+   ============================================================ */
+#sidebar,
+aside#sidebar {
+	background: var(--side-bg);
+	color: var(--side-text);
+	border-right: 1px solid var(--side-border);
+}
+
+/* Subscription management button — restyled from orange to graphite */
+.btn.btn-important.subscription_management,
+#sidebar .btn-important,
+#sidebar a.btn-important,
+.btn[href*="subscription"] {
+	background: var(--side-bg-2);
+	color: var(--side-text);
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	margin: 12px;
+	padding: 10px 14px;
+	font-weight: 500;
+}
+.btn.btn-important.subscription_management:hover,
+#sidebar .btn-important:hover,
+#sidebar a.btn-important:hover { background: var(--accent-hover); border-color: var(--side-border); color: var(--side-text); }
+
+/* tree */
+#sidebar .tree,
+#sidebar .tree-folder,
+#sidebar .tree-folder-items,
+#sidebar ul {
+	background: transparent;
+	color: var(--side-text);
+}
+
+#sidebar a,
+#sidebar .item,
+#sidebar .tree-folder-title,
+#sidebar .feed {
+	color: var(--side-text);
+	background: transparent;
+	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+}
+#sidebar a:hover,
+#sidebar .tree-folder-title:hover,
+#sidebar .feed:hover { background: var(--side-hover); color: var(--side-text); }
+
+#sidebar .active > a,
+#sidebar .feed.active > a,
+#sidebar .tree-folder.active > .tree-folder-title,
+#sidebar a.active {
+	background: var(--side-active);
+	color: var(--side-text);
+}
+
+/* count badges */
+#sidebar .feed_count,
+#sidebar .title-count,
+#sidebar .count,
+.feed_count {
+	background: rgba(255, 255, 255, .08);
+	color: var(--side-text);
+	font-size: 11px;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	padding: 1px 7px;
+	border-radius: 9px;
+}
+#sidebar .active .feed_count,
+#sidebar .active .title-count { background: rgba(255, 255, 255, .15); }
+
+/* feed errors (warning triangle) */
+#sidebar .error,
+#sidebar .feed.error > a,
+.tree-folder-title.error,
+.error .icon,
+.warning { color: var(--error); }
+
+/* disclosure / fold arrows */
+#sidebar .tree-folder > .tree-folder-title::before,
+#sidebar .disclosure { color: var(--side-muted); }
+
+/* favicons in sidebar */
+#sidebar .favicon {
+	width: 14px; height: 14px;
+	border-radius: 2px;
+	background: var(--side-bg-2);
+}
+
+/* bottom navigation arrows */
+#sidebar .nav_menu_bottom,
+#nav_menu_buttons,
+.nav_menu_bottom {
+	border-top: 1px solid var(--side-border);
+	padding: 8px 12px;
+	background: transparent;
+}
+.nav_menu_bottom .btn,
+#nav_menu_buttons .btn {
+	background: transparent;
+	color: var(--side-muted);
+	border: none;
+}
+.nav_menu_bottom .btn:hover,
+#nav_menu_buttons .btn:hover {
+	background: var(--side-hover);
+	color: var(--side-text);
+}
+
+/* aside hidden state — preserve core behavior */
+body.aside-hidden #sidebar { display: none; }
+
+/* ============================================================
+   Article list (#stream, .flux) — list view (primary)
+   ============================================================ */
+#stream {
+	background: var(--bg);
+	color: var(--text);
+}
+
+/* day separators */
+.day,
+.day_header,
+#stream .day {
+	padding: 14px 20px 10px;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text);
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+}
+
+/* feed-name watermark (right-edge ghost) */
+.stream_title,
+#stream > .stream_title,
+.title-stream-feed {
+	font-family: var(--font-body);
+	font-style: italic;
+	color: var(--muted);
+	opacity: .35;
+	font-size: 18px;
+	letter-spacing: -0.01em;
+}
+
+/* article rows */
+#stream .flux,
+.flux {
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+	padding: var(--row-py) var(--row-px);
+	color: var(--text);
+	transition: background-color .1s ease;
+}
+#stream .flux:nth-child(even) { background: var(--row-alt); }
+#stream .flux:hover { background: var(--hover); }
+
+/* unread vs read */
+#stream .flux.not_read .title,
+.flux.not_read .title {
+	color: var(--text);
+	font-weight: 500;
+}
+#stream .flux:not(.not_read) .title,
+.flux:not(.not_read) .title {
+	color: var(--read);
+	font-weight: 400;
+}
+
+/* active (selected) row */
+#stream .flux.active,
+.flux.active {
+	background: var(--selected);
+}
+#stream .flux.current,
+.flux.current {
+	background: var(--selected);
+	box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* unread envelope icon — semantic warm-orange */
+.flux .read,
+.flux .marker,
+.flux.not_read .read {
+	color: var(--unread);
+}
+.flux:not(.not_read) .read { color: var(--read); opacity: .45; }
+
+/* favorite/star icon */
+.flux .bookmark,
+.flux .favorite-action {
+	color: var(--muted);
+	opacity: .55;
+}
+.flux.favorite .bookmark,
+.flux.favorite .favorite-action {
+	color: var(--favorite);
+	opacity: 1;
+}
+
+/* favicon in rows */
+.flux .favicon,
+.flux img.favicon {
+	width: 16px; height: 16px;
+	border-radius: 2px;
+}
+
+/* source / website name */
+.flux .website,
+.flux .feed_title {
+	color: var(--accent);
+	font-weight: 500;
+	font-size: 13px;
+}
+
+/* date */
+.flux .date {
+	color: var(--muted);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+/* title — main text */
+.flux .title,
+.flux .item.title a {
+	color: var(--text);
+	letter-spacing: -0.005em;
+}
+
+/* author/byline */
+.flux .author { color: var(--muted); font-size: 12px; }
+
+/* tags / labels on rows */
+.flux .tags .label,
+.flux .label {
+	background: var(--selected);
+	color: var(--muted);
+	border-radius: 4px;
+	padding: 1px 6px;
+	font-size: 11px;
+}
+
+/* ============================================================
+   Magazine + global-view (.global, .reader) — expanded card
+   ============================================================ */
+#stream.reader .flux,
+#stream.global .flux,
+.global .flux {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	margin: 12px 20px;
+	padding: 20px 24px;
+}
+#stream.reader .flux:hover,
+#stream.global .flux:hover { background: var(--surface); }
+
+#stream.reader .flux .title,
+#stream.global .flux .title {
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+}
+
+/* expanded flux body inside magazine */
+.flux.active .flux_content,
+.flux_content {
+	background: var(--surface);
+	color: var(--text);
+	border-radius: var(--radius);
+	margin-top: 12px;
+	padding: var(--reader-py) var(--reader-px);
+}
+
+/* ============================================================
+   Grid view (.flux.grid, .reader.grid)
+   ============================================================ */
+.reader.grid #stream,
+#stream.grid {
+	padding: 16px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 16px;
+}
+#stream.grid .flux,
+.reader.grid .flux {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	margin: 0;
+	padding: 16px 18px;
+	display: flex;
+	flex-direction: column;
+}
+#stream.grid .flux .title,
+.reader.grid .flux .title {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: -0.005em;
+	line-height: 1.35;
+	margin-bottom: 8px;
+}
+#stream.grid .flux .summary,
+.reader.grid .flux .summary {
+	color: var(--muted);
+	font-size: 13px;
+	line-height: 1.55;
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* ============================================================
+   Article reading pane (.flux_content / .content)
+   ============================================================ */
+.flux_content {
+	background: var(--surface);
+	color: var(--text);
+}
+
+.flux_header,
+.flux_content .flux_header {
+	border-bottom: 1px solid var(--border);
+	padding-bottom: 16px;
+	margin-bottom: 22px;
+}
+
+.flux_content .title,
+.flux_content h1,
+.flux_content .item.title {
+	font-family: var(--font-ui);
+	font-size: 26px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	color: var(--text);
+	margin: 0 0 8px;
+}
+
+.flux_content .author,
+.flux_content .date,
+.flux_content .subtitle {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.flux_content .content,
+.content {
+	font-family: var(--font-body);
+	font-size: 16.5px;
+	line-height: var(--lh-body);
+	color: var(--text);
+	max-width: var(--reader-max);
+}
+
+.content p { margin: 0 0 18px; }
+
+.content h2, .content h3, .content h4 {
+	font-family: var(--font-ui);
+	letter-spacing: -0.01em;
+	color: var(--text);
+	margin-top: 28px;
+	margin-bottom: 10px;
+}
+.content h2 { font-size: 22px; font-weight: 600; }
+.content h3 { font-size: 18px; font-weight: 600; }
+.content h4 { font-size: 16px; font-weight: 600; }
+
+.content a {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	text-decoration-color: var(--border);
+}
+.content a:hover {
+	text-decoration-color: var(--accent);
+	color: var(--accent-hover);
+}
+
+.content blockquote {
+	margin: 18px 0;
+	padding: 4px 0 4px 20px;
+	border-left: 2px solid var(--border);
+	color: var(--muted);
+	font-style: italic;
+}
+
+.content code {
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	background: var(--header-bg);
+	padding: 1px 6px;
+	border-radius: 4px;
+	color: var(--text);
+}
+
+.content pre {
+	font-family: var(--font-mono);
+	font-size: 13px;
+	line-height: 1.55;
+	background: var(--header-bg);
+	color: var(--text);
+	padding: 14px 16px;
+	border-radius: var(--radius-sm);
+	overflow: auto;
+	border: 1px solid var(--border);
+}
+.content pre code { background: transparent; padding: 0; }
+
+.content img,
+.content video,
+.content figure {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--radius-sm);
+}
+
+.content figure { margin: 18px 0; }
+.content figcaption {
+	font-size: 13px;
+	color: var(--muted);
+	margin-top: 6px;
+	font-style: italic;
+}
+
+.content table {
+	border-collapse: collapse;
+	margin: 18px 0;
+	font-size: 14px;
+}
+.content th, .content td {
+	border: 1px solid var(--border);
+	padding: 6px 10px;
+	text-align: left;
+}
+.content th { background: var(--header-bg); font-weight: 600; }
+
+.content hr { margin: 24px 0; border-top: 1px solid var(--border); }
+
+/* article footer actions */
+.flux_content .bottom,
+.flux_content .pagination,
+.flux_content .horizontal-list {
+	border-top: 1px solid var(--border);
+	margin-top: 28px;
+	padding-top: 16px;
+	color: var(--muted);
+}
+
+/* ============================================================
+   Forms, modals, settings pages
+   ============================================================ */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	padding: 7px 10px;
+	font-family: inherit;
+	font-size: 13px;
+}
+input:focus, select:focus, textarea:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--selected);
+}
+
+label { color: var(--text); }
+
+.box,
+.notification,
+.alert {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-card);
+	color: var(--text);
+}
+.notification.good, .alert.good { border-color: #16a34a; }
+.notification.bad, .alert.bad { border-color: var(--error); }
+
+/* tables in settings */
+table.table th,
+table.table td { border-bottom: 1px solid var(--border); }
+table.table th { color: var(--muted); font-weight: 600; }
+
+/* ============================================================
+   Pagination & "load more"
+   ============================================================ */
+.pagination,
+#load_more {
+	padding: 18px 20px;
+	text-align: center;
+	color: var(--muted);
+	border-top: 1px solid var(--border);
+}
+
+#load_more a {
+	display: inline-block;
+	padding: 8px 18px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text);
+}
+#load_more a:hover { background: var(--hover); border-color: var(--accent); }
+
+/* ============================================================
+   Scrollbars (webkit) — subtle, paper-friendly
+   ============================================================ */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 6px;
+	border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+#sidebar::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, .12);
+	border-color: var(--side-bg);
+}
+#sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .2); }
+
+/* ============================================================
+   Responsive (mobile / narrow)
+   ============================================================ */
+@media (max-width: 760px) {
+	:root {
+		--row-py: 13px;
+		--row-px: 14px;
+		--reader-py: 22px;
+		--reader-px: 18px;
+	}
+	.flux_content .title,
+	.flux_content h1 { font-size: 22px; }
+	.content { font-size: 16px; }
+}
