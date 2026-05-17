@@ -329,11 +329,39 @@ button.btn-important {
    Sidebar (#sidebar, .tree, .feed, .category)
    Mid-tone graphite, neutral hue in both modes.
    ============================================================ */
+/* Sidebar column — apply graphite to the whole .aside.aside_feed container
+ * (not just the inner #sidebar ul) so background fills full vertical height,
+ * the area above "Subscription management" and the area around the bottom
+ * nav arrows. */
+.aside.aside_feed,
+nav.aside_feed,
+#aside_feed,
 #sidebar,
 aside#sidebar {
 	background: var(--side-bg);
 	color: var(--side-text);
 	border-right: 1px solid var(--side-border);
+}
+
+/* bottom prev/next nav arrows — they're position:fixed at bottom-left,
+ * sitting visually under the sidebar; carry the same graphite */
+#nav_entries {
+	background: var(--side-bg);
+	border-right: 1px solid var(--side-border);
+	border-top: 1px solid var(--side-border);
+}
+#nav_entries button { color: var(--side-muted); }
+#nav_entries button:hover { background: rgba(255,255,255,.06); color: var(--side-text); }
+
+/* sidebar text color (higher contrast for readability) */
+.aside.aside_feed,
+.aside.aside_feed a,
+.aside.aside_feed .title,
+.aside.aside_feed .tree-folder-title .title,
+.aside.aside_feed .feed .title,
+#sidebar a,
+#sidebar .title {
+	color: var(--side-text);
 }
 
 /* Subscription management button — clearly visible on dark sidebar */
@@ -377,12 +405,19 @@ aside#sidebar {
 	background: transparent;
 	border-radius: var(--radius-sm);
 	padding: 6px 10px;
+	font-weight: 500;
 }
+#sidebar .tree-folder-title .title,
+#sidebar .item .title,
+.aside.aside_feed .title { font-weight: 500; }
 #sidebar a:hover,
 #sidebar .tree-folder-title:hover,
 #sidebar .feed:hover { background: var(--side-hover); color: var(--side-text); }
 
-/* Active sidebar item — graphite, not Origine's blue */
+/* Active sidebar item — high-contrast pill, accent left edge for visibility */
+.aside.aside_feed .tree-folder.active > .tree-folder-title,
+.aside.aside_feed .tree-folder-items > .item.active,
+.aside.aside_feed .feed.active > a,
 #sidebar .nav-list .item.active,
 #sidebar .nav-list .nav-section .item.active:hover a,
 #sidebar .nav-list .nav-section .item.active:hover .as-link,
@@ -391,13 +426,17 @@ aside#sidebar {
 #sidebar .feed.active > a,
 #sidebar a.active {
 	background: var(--side-active);
-	color: var(--side-text);
+	color: #ffffff;
+	font-weight: 700;
+	box-shadow: inset 3px 0 0 var(--side-text);
 }
 #sidebar .nav-list .item.active a,
 #sidebar .nav-list .item.active .as-link,
 #sidebar .tree-folder-items > .item.active > a,
+.aside.aside_feed .tree-folder.active > .tree-folder-title .title,
 #sidebar .tree-folder.active > .tree-folder-title .title {
-	color: var(--side-text);
+	color: #ffffff;
+	font-weight: 700;
 }
 
 /* count badges */
