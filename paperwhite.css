@@ -52,39 +52,17 @@
 	--lh-body:      1.7;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root:not(.light) {
-		--bg:           #1c1917;
-		--surface:      #292524;
-		--header-bg:    #1c1917;
-		--border:       #44403c;
-		--border-soft:  #2c2724;
-		--text:         #f5f5f4;
-		--muted:        #a8a29e;
-		--read:         #78716c;
-		--accent:       #e5e5e7;
-		--accent-hover: #fafaf9;
-		--selected:     rgba(245, 245, 244, .08);
-		--hover:        rgba(245, 245, 244, .04);
-		--unread:       #fb923c;
-		--favorite:     #fb923c;
-		--error:        #f87171;
-		--row-alt:      #211d1b;
-
-		--side-bg:      #27272a;
-		--side-bg-2:    #3f3f46;
-		--side-text:    #fafafa;
-		--side-muted:   #a1a1aa;
-		--side-border:  #18181b;
-		--side-active:  #3f3f46;
-		--side-hover:   rgba(255, 255, 255, .04);
-
-		--shadow-card:  0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .4);
-	}
-}
-
-/* User-forced dark mode (Settings → Display) */
-body.dark, body.dark :root {
+/* Dark tokens — applied by any of:
+ *   html.darkMode_dark / html.darkMode_yes (user forced)
+ *   html.darkMode_auto + OS prefers-color-scheme: dark
+ *
+ * We override BOTH Paperwhite vars AND Origine's --background-color-*
+ * / --font-color-* / --border-color vars so all of Origine's rules
+ * naturally pick up the dark palette.
+ */
+html.darkMode_dark,
+html.darkMode_yes {
+	/* Paperwhite */
 	--bg:           #1c1917;
 	--surface:      #292524;
 	--header-bg:    #1c1917;
@@ -108,6 +86,98 @@ body.dark, body.dark :root {
 	--side-border:  #18181b;
 	--side-active:  #3f3f46;
 	--side-hover:   rgba(255, 255, 255, .04);
+	--shadow-card:  0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .4);
+
+	/* Origine / frss vars — remap to our warm dark */
+	--background-color-light:                       #1c1917;
+	--background-color-light-shadowed:              #292524;
+	--background-color-light-shadowed-transparent:  rgba(41,37,36,.8);
+	--background-color-grey:                        #292524;
+	--background-color-hover:                       #211d1b;
+	--background-color-light-gradient1:             #1c1917;
+	--background-color-light-gradient2:             #1c1917;
+	--unread-article-background-color:              #1c1917;
+	--unread-article-background-color-hover:        #211d1b;
+	--unread-article-border-color:                  transparent;
+	--favorite-article-background-color:            #1f1c17;
+	--favorite-article-background-color-hover:      #29251f;
+	--favorite-article-border-color:                transparent;
+	--contrast-background-color:                    #44403c;
+	--contrast-background-color-gradient:           #44403c;
+	--contrast-background-color-hover:              #57534e;
+	--contrast-background-color-active:             #3f3f46;
+	--contrast-border-color:                        #44403c;
+	--contrast-border-color-active:                 #57534e;
+	--contrast-background-font-color:               #f5f5f4;
+	--font-color:                                   #f5f5f4;
+	--font-color-grey:                              #a8a29e;
+	--font-color-light-shadowed:                    #78716c;
+	--font-color-light:                             #f5f5f4;
+	--text-shadow-color:                            #292524;
+	--text-shadow-color-dark:                       #1c1917;
+	--box-shadow-color:                             rgba(0,0,0,.4);
+	--box-shadow-color-inset:                       #292524;
+	--font-color-link:                              #e5e5e7;
+	--font-color-link-hover:                        #fafaf9;
+	--border-color:                                 #44403c;
+	--border-color-shadow-side:                     #2c2724;
+}
+@media (prefers-color-scheme: dark) {
+	html.darkMode_auto {
+		--bg:           #1c1917;
+		--surface:      #292524;
+		--header-bg:    #1c1917;
+		--border:       #44403c;
+		--border-soft:  #2c2724;
+		--text:         #f5f5f4;
+		--muted:        #a8a29e;
+		--read:         #78716c;
+		--accent:       #e5e5e7;
+		--accent-hover: #fafaf9;
+		--selected:     rgba(245, 245, 244, .08);
+		--hover:        rgba(245, 245, 244, .04);
+		--unread:       #fb923c;
+		--favorite:     #fb923c;
+		--error:        #f87171;
+		--row-alt:      #211d1b;
+		--side-bg:      #27272a;
+		--side-bg-2:    #3f3f46;
+		--side-text:    #fafafa;
+		--side-muted:   #a1a1aa;
+		--side-border:  #18181b;
+		--side-active:  #3f3f46;
+		--side-hover:   rgba(255, 255, 255, .04);
+		--shadow-card:  0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .4);
+
+		--background-color-light:                       #1c1917;
+		--background-color-light-shadowed:              #292524;
+		--background-color-light-shadowed-transparent:  rgba(41,37,36,.8);
+		--background-color-grey:                        #292524;
+		--background-color-hover:                       #211d1b;
+		--background-color-light-gradient1:             #1c1917;
+		--background-color-light-gradient2:             #1c1917;
+		--unread-article-background-color:              #1c1917;
+		--unread-article-background-color-hover:        #211d1b;
+		--unread-article-border-color:                  transparent;
+		--favorite-article-background-color:            #1f1c17;
+		--favorite-article-background-color-hover:      #29251f;
+		--favorite-article-border-color:                transparent;
+		--contrast-background-color:                    #44403c;
+		--contrast-background-color-hover:              #57534e;
+		--contrast-background-color-active:             #3f3f46;
+		--contrast-border-color:                        #44403c;
+		--contrast-background-font-color:               #f5f5f4;
+		--font-color:                                   #f5f5f4;
+		--font-color-grey:                              #a8a29e;
+		--font-color-light-shadowed:                    #78716c;
+		--font-color-light:                             #f5f5f4;
+		--font-color-link:                              #e5e5e7;
+		--font-color-link-hover:                        #fafaf9;
+		--border-color:                                 #44403c;
+		--border-color-shadow-side:                     #2c2724;
+		--box-shadow-color:                             rgba(0,0,0,.4);
+		--box-shadow-color-inset:                       #292524;
+	}
 }
 
 /* ============================================================
